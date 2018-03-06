@@ -1,0 +1,144 @@
+﻿<Window x:Class="TheMoonAndSun.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TheMoonAndSun"
+        mc:Ignorable="d"
+        Title="The Moon and The Sun" Height="680" Width="570">
+    <Grid IsHitTestVisible="True" Margin="0,0,-7,-6" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+        <TextBox x:Name="hourAngle" HorizontalAlignment="Left" Height="25" Margin="210,110,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="185" AllowDrop="False" Focusable="False" IsTabStop="False" BorderThickness="1" BorderBrush="#FF2A0AF1" />
+        <TextBox x:Name="Location" HorizontalAlignment="Left" Height="22" Margin="20,78,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="100" RenderTransformOrigin="0.5,0.5">
+            <TextBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleY="0.11"/>
+                    <RotateTransform Angle="0.414"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </TextBox.RenderTransform>
+        </TextBox>
+        <TextBox x:Name="result" HorizontalAlignment="Left" Height="290" Margin="15,340,0,0" VerticalAlignment="Top" Width="520" VerticalScrollBarVisibility="Visible"/>
+        <TextBox x:Name="textBox1" HorizontalAlignment="Left" Height="20" Margin="15,30,0,0" TextWrapping="Wrap" Text="Geographic Location" VerticalAlignment="Top" Width="115" AllowDrop="False" Focusable="False" IsTabStop="False" BorderThickness="0"/>
+        <TextBox x:Name="textBox2" HorizontalAlignment="Left" Height="50" Margin="135,25,0,0" TextWrapping="Wrap" Text="Longitude in Decimal Degrees" VerticalAlignment="Top" Width="60" AllowDrop="False" Focusable="False" IsTabStop="False" BorderThickness="0"/>
+        <TextBox x:Name="Longitude" HorizontalAlignment="Left" Height="22" Margin="135,78,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="55" TextChanged="Longitude_TextChanged"/>
+        <TextBox x:Name="textBox4" HorizontalAlignment="Left" Height="50" Margin="200,25,0,0" TextWrapping="Wrap" Text="Latitude in Decimal Degrees" VerticalAlignment="Top" Width="65" AllowDrop="False" Focusable="False" IsTabStop="False" BorderThickness="0"/>
+        <TextBox x:Name="Latitude" HorizontalAlignment="Left" Height="22" Margin="200,78,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="55" RenderTransformOrigin="0.5,0.5" TextChanged="Latitude_TextChanged">
+            <TextBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleY="0.185"/>
+                    <RotateTransform Angle="0.696"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </TextBox.RenderTransform>
+        </TextBox>
+        <TextBox x:Name="textBox5" HorizontalAlignment="Left" Height="35" Margin="265,40,0,0" TextWrapping="Wrap" Text="Altitude in meters" VerticalAlignment="Top" Width="55" AllowDrop="False" Focusable="False" IsTabStop="False" BorderThickness="0" RenderTransformOrigin="0.909,0.571"/>
+        <TextBox x:Name="Elevation" HorizontalAlignment="Left" Height="22" Margin="265,78,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="50" TextChanged="Elevation_TextChanged"/>
+        <TextBox x:Name="textBox3" HorizontalAlignment="Left" Height="50" Margin="330,25,0,0" TextWrapping="Wrap" Text="Time Zone in Hours" VerticalAlignment="Top" Width="45" BorderThickness="0" AllowDrop="False" Focusable="False" IsTabStop="False"/>
+        <TextBox x:Name="timeZone" HorizontalAlignment="Left" Height="22" Margin="330,80,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="35" RenderTransformOrigin="0.364,-0.5" TextChanged="timeZone_TextChanged"/>
+        <TextBlock x:Name="textBlock" HorizontalAlignment="Center" Margin="395,5,129,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="75" Width="45" FontFamily="Arial Unicode MS" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled" TextAlignment="Center" Foreground="#FF2706F5" RenderTransformOrigin="0.6,0.667" FontSize="14"><Run Text="The Moon &amp; The Sun  "/></TextBlock>
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="20" Margin="45,55,0,0" TextWrapping="Wrap" Text="Name" VerticalAlignment="Top" Width="45" BorderThickness="0"/>
+        <TextBox x:Name="errorMsg" HorizontalAlignment="Left" Height="25" Margin="415,205,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="135" BorderThickness="1" BorderBrush="#FF0946FD"/>
+        <Label x:Name="label" Content="Date: Year   Month  Day" HorizontalAlignment="Left" Margin="120,136,0,0" VerticalAlignment="Top" Height="28" Width="150"/>
+        <TextBox x:Name="year" HorizontalAlignment="Left" Height="22" Margin="130,162,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" TextChanged="year_TextChanged" BorderThickness="1"/>
+        <TextBox x:Name="month" HorizontalAlignment="Left" Height="22" Margin="185,162,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="30" RenderTransformOrigin="0.5,0.75" TextChanged="month_TextChanged" BorderThickness="1"/>
+        <TextBox x:Name="day" HorizontalAlignment="Left" Height="23" Margin="225,161,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="25" TextChanged="day_TextChanged" BorderThickness="1"/>
+        <Label x:Name="label1" Content="Universal Time(UTC)" HorizontalAlignment="Left" Margin="415,85,0,0" VerticalAlignment="Top" Width="115" Height="25"/>
+        <TextBox x:Name="UTC" HorizontalAlignment="Left" Height="25" Margin="415,110,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="125" RenderTransformOrigin="0.5,0.5" BorderThickness="1" BorderBrush="#FF0945FB">
+            <TextBox.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleY="0.002"/>
+                    <RotateTransform Angle="0.044"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </TextBox.RenderTransform>
+        </TextBox>
+        <Label x:Name="label2" Content="Local Time" HorizontalAlignment="Left" Margin="255,135,0,0" VerticalAlignment="Top" Width="70" Height="27"/>
+        <TextBox x:Name="LocalTime" HorizontalAlignment="Left" Height="23" Margin="265,161,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="55" TextChanged="LocalTime_TextChanged"/>
+        <Image x:Name="image" HorizontalAlignment="Left" Height="85" Margin="460,5,0,0" VerticalAlignment="Top" Width="90" Source="Resources/SunMoonLogo.jpg"/>
+        <DatePicker HorizontalAlignment="Left" Margin="10,110,0,0" VerticalAlignment="Top" SelectedDateFormat="Long" Width="185" SelectedDateChanged="dateChanged" Height="25"/>
+        <Label x:Name="iran_Date" Content="Iranian: Year  Month  Day" HorizontalAlignment="Left" Margin="320,136,0,0" VerticalAlignment="Top" Height="25" Width="150"/>
+        <TextBox x:Name="iranYear" HorizontalAlignment="Left" Height="23" Margin="335,161,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="45" TextChanged="iranYear_TextChanged"/>
+        <TextBox x:Name="iranMonth" HorizontalAlignment="Left" Height="23" Margin="390,161,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="30" TextChanged="iranMonth_TextChanged"/>
+        <TextBox x:Name="iranDay" HorizontalAlignment="Left" Height="23" Margin="430,161,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="25" TextChanged="iranDay_TextChanged"/>
+        <CheckBox x:Name="aidAccept" Content="" HorizontalAlignment="Left" Margin="320,210,0,0" VerticalAlignment="Top" Width="15" Height="15" RenderTransformOrigin="1,0.333" />
+        <ComboBox x:Name="AircomboBox" HorizontalAlignment="Left" Margin="465,162,0,0" VerticalAlignment="Top" Width="80" >
+            <RadioButton x:Name="dryAirSelect" Content="Dry Air" IsChecked="True" />
+            <RadioButton x:Name="wetAirSelect" Content="Humid Air"/>
+            <RadioButton x:Name="noAirSelect" Content="No Air"/>
+        </ComboBox>
+        <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Margin="467,143,0,0" TextWrapping="Wrap" Text="Select Air Type" VerticalAlignment="Top"/>
+        <Menu x:Name="menu" HorizontalAlignment="Left" Height="20" Margin="10,5,0,0" VerticalAlignment="Top" Width="365">
+            <MenuItem Header="File">
+                <MenuItem Header="Save Location" Click="saveLocation"/>
+                <MenuItem Header="Clear Location" Click="clearFile"/>
+                <MenuItem Header="Save" Click="savetoFile"/>
+                <MenuItem Header="Exit" Click="closeWindow"/>
+            </MenuItem>
+            <MenuItem Header="Recaluate" Click="showClick"/>
+            <MenuItem Header="Moon Phases" Click="moonPhase"/>
+            <MenuItem Header="Hijri Months" Click="hijriClick"/>
+            <MenuItem Header="Calendar">
+                <MenuItem x:Name="moonSun" Header="Moon and Sun" Height="20" Margin="0,0,-45,0" Click="moonSunCalendar" />
+                <MenuItem x:Name="islamCalendar" Header="Islamic" Click="islamcalnedar"/>
+                <MenuItem x:Name="moonCalendar" Header="Moon" Click="mooncalendar"/>
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Quick Help" Click="showHelp"/>
+                <MenuItem Header="Help" Click="MenuItem_Click_1"/>
+                <MenuItem Header="About" Click="aboutClick"/>
+            </MenuItem>
+        </Menu>
+        <ComboBox x:Name="CalencomboBox" HorizontalAlignment="Left" Margin="10,160,0,0" VerticalAlignment="Top" Width="110" Height="25" >
+            <RadioButton x:Name="gregCalendar" Content="Gregory Calendar" IsChecked="True"/>
+            <RadioButton x:Name="persCalendar" Content="Iranian Calendar"/>
+        </ComboBox>
+        <Label x:Name="label3" Content="Select Calendar Type" HorizontalAlignment="Left" Margin="5,134,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.489,0.192"/>
+        <Label x:Name="label4" Content="Temp." HorizontalAlignment="Left" Margin="125,185,0,0" VerticalAlignment="Top" Height="25" FontSize="11"/>
+        <TextBox x:Name="tempBox" HorizontalAlignment="Left" Height="25" Margin="125,210,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="40"/>
+        <TextBox x:Name="textBox6" HorizontalAlignment="Left" Height="40" Margin="215,190,0,0" TextWrapping="Wrap" Text="Sighting aid for new moon is accepted" VerticalAlignment="Top" Width="105" BorderThickness="0" RenderTransformOrigin="0.5,0.5" FontSize="11"/>
+        <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="340,205,0,0" VerticalAlignment="Top" Width="70" RenderTransformOrigin="0.467,-0.227">
+            <RadioButton x:Name="yallop" Content="Yallop"/>
+            <RadioButton x:Name="odeh" Content="Odeh"/>
+            <RadioButton x:Name="yallopOdeh" Content="Either one" IsChecked="True"/>
+        </ComboBox>
+        <TextBox x:Name="textBox7" HorizontalAlignment="Left" Height="20" Margin="325,185,0,0" TextWrapping="Wrap" Text="New Moon Creteria" VerticalAlignment="Top" Width="110" BorderThickness="0" FontSize="11"/>
+        <Label x:Name="label5" Content="Error Message" HorizontalAlignment="Left" Margin="445,180,0,0" VerticalAlignment="Top" Height="25" FontSize="11"/>
+        <TextBox x:Name="Fajr" HorizontalAlignment="Left" Height="23" Margin="280,255,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="40"/>
+        <TextBox x:Name="magrib" HorizontalAlignment="Left" Height="23" Margin="325,255,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="40"/>
+        <TextBox x:Name="isha" HorizontalAlignment="Left" Height="23" Margin="370,255,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="40"/>
+        <ComboBox x:Name="asr" HorizontalAlignment="Left" Margin="415,255,0,0" VerticalAlignment="Top" Width="120">
+            <RadioButton x:Name="asr1length" Content="1 lenght Shadow"/>
+            <RadioButton x:Name="asr2length" Content="2 lenght Sahdow"/>
+        </ComboBox>
+        <Label x:Name="label6" Content="Select Convention        Fajr   Maghreb  Isha              Asr" HorizontalAlignment="Left" Margin="165,230,0,0" VerticalAlignment="Top" Width="370" Height="25"/>
+        <ComboBox x:Name="conventions" HorizontalAlignment="Left" Margin="95,255,0,0" VerticalAlignment="Top" Width="180" SelectionChanged="conventions_SelectionChanged">
+            <RadioButton x:Name="azanGoo" Content="Azangoo.com" IsChecked="True"/>
+            <RadioButton x:Name="tehranGeo" Content="University of Tehran, Geophysics"/>
+            <RadioButton x:Name="levaQum" Content="Leva Institute, Qum"/>
+            <RadioButton x:Name="islamKarachi" Content="University of Islamic Sciences, Karachi "/>
+            <RadioButton x:Name="ISNA" Content="Islamic Society of North America (ISNA) "/>
+            <RadioButton x:Name="egyptian" Content="Egyptian  General Authority"/>
+            <RadioButton x:Name="custom" Content="Custom"/>
+        </ComboBox>
+        <TextBlock x:Name="textBlock2" HorizontalAlignment="Left" Margin="10,240,0,0" TextWrapping="Wrap" Text="Sun Elevation at Islam prayer" VerticalAlignment="Top" Height="40" Width="80"/>
+        <CheckBox x:Name="DST" Content="Daylight Saving" HorizontalAlignment="Left" Margin="23,315,0,0" VerticalAlignment="Top" Click="DSTChecked"/>
+        <ListBox x:Name="selectRegion" HorizontalAlignment="Left" Height="45" Margin="140,285,0,0" VerticalAlignment="Top" Width="130" SelectionChanged="selectRegion_SelectionChanged"/>
+        <TextBox x:Name="startDST" HorizontalAlignment="Left" Height="23" Margin="280,305,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="120"/>
+        <TextBox x:Name="endDST" HorizontalAlignment="Left" Height="23" Margin="410,305,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="label7" Content="Select DST Region" HorizontalAlignment="Left" Margin="25,285,0,0" VerticalAlignment="Top" Width="105" Height="25"/>
+        <Label x:Name="label8" Content="DST Begins" HorizontalAlignment="Left" Margin="282,280,0,0" VerticalAlignment="Top" Width="113" Height="25"/>
+        <Label x:Name="label9" Content="DST Ends" HorizontalAlignment="Left" Margin="412,280,0,0" VerticalAlignment="Top" Width="113"/>
+        <ComboBox x:Name="AtmSelection" HorizontalAlignment="Left" Margin="10,210,0,0" VerticalAlignment="Top" Width="110" SelectionChanged="AtmSelection_SelectionChanged" >
+            <RadioButton x:Name="msiseAtm" Content="MSISE Model" IsChecked="True"/>
+            <RadioButton x:Name="standardAtm" Content="Standard Model"/>
+            <RadioButton x:Name="cusomAtm" Content="Custom"/>
+        </ComboBox>
+        <Label x:Name="label10" Content="Atmospheric Models" HorizontalAlignment="Left" Margin="10,185,0,0" VerticalAlignment="Top" Width="110" Height="25" FontSize="11"/>
+        <TextBox x:Name="pressBox" HorizontalAlignment="Left" Height="25" Margin="170,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="45" Text=" "/>
+        <Label x:Name="label11" Content="Press." HorizontalAlignment="Left" Margin="172,185,0,0" VerticalAlignment="Top" FontSize="11"/>
+
+    </Grid>
+</Window>
