@@ -1,0 +1,2 @@
+mingw32-gfortran.exe -Wall -DBUILD_DLL -O2  -ffree-line-length-none -Wall -c MoonSun.f95 -o MoonSun.o
+mingw32-gfortran -shared -static -Wl,--output-def=StaticMoonSunC.def -Wl,--out-implib=StaticMoonSunC.a -Wl,--dll MoonSun.o -o StaticMoonSunC.dll -s

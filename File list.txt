@@ -1,0 +1,133 @@
+TheMoonandSun
+
+TheMoonAndSun.sln Visual Studio file
+TheMoonandSun directory
+
+Fortran files
+Batch files for compiling Fortran files:
+StaticMoonSun.bat for compiling to executable
+staticMoonSunCDLL.bat for compiling to dynamic library(dll)
+MSISECDLL.bat for compiling to dynamic library file
+
+Calendar.exe 
+
+MSISGTD.FOR MSISE module 
+
+Main.f95
+Kind of example or driver for moonsun.f95. 
+
+Moonsun.f95 file include:
+
+calendar Module
+	dayofgyear
+	dayofpyear
+	deltat
+	dnutate_Doliq_Low
+	equation_Time
+	gdays_in_Month
+	gregcal2ircal
+	gregmonthname
+	hijrimonthname
+	hour2hms	
+	idays_in_month
+	irancalendar
+	ircal2gregcal
+	ircal2jd
+	isleapyear
+	jd2hijri
+	jd2ircal
+	jd2weekday
+	jd2weekdaynum
+	jdequisolitice	
+	persianmonthname	
+	sun_apparent_geo_low
+
+From SOFA PACAKGE in this module
+	iau_CAL2JD
+	iau_DAT
+	iau_JD2CAL
+	iau_TAITT
+	iau_UTCTAI
+
+From NOVAS Package in this module
+	JULDAT
+	RCALDAt (with modification)
+	
+moonsun	Module
+	a1_3
+	aberat
+	anmp
+	astcon
+	astrosolartimes
+	atmos_refrac
+	azanangle
+	ecliptic_to_equitorial
+	eqxra
+	erot
+	etilt
+	funarg
+	geoglob
+	hijriadjust
+	hijrimonths
+	horizontal_coords
+	islamsolartimes
+	lunar_parallax
+	lunar_position
+	mean_anomaly_moon
+	mean_anomaly_sun
+	moon_argument_latiude
+	moon_day_rise_set
+	moon_illum_fractio
+	moon_ling_lat_distance
+	moon_mean_ecliptic
+	moon_mean_long
+	moon_longitude
+	moon_mean_perigee
+	moon_phases
+	moon_rise_set
+	moon_sun_elongation
+	moonsemidia
+	moontransit
+	moonvisibility
+	nod
+	nu2000k
+	parallax_correction
+	refrac
+	sidtim
+	solar_position
+	solar_time
+	solar_transit
+	stdatm
+	sun_apparent_geo
+	sun_earth_latitude
+	sun_earth_vector
+	sun_longitude
+	sunrise_set_noon
+	terra
+	times
+	truejdequisolitice
+	yearmoonphases
+
+From NOVAS package in this module
+	ASTCON
+	EQXRA
+	EROT
+	ETILT
+	FUNARG	
+	NOD
+	NU2000K
+	REFRAC
+	SIDTIM
+	TERRA
+	TIMRS
+	
+utility	Module
+	anglechange
+	change_m
+	changeangle
+	changeangle180
+	d2str
+	fourth_order_polynomial
+	i2str
+	lspi
+	third_order_polynomial
