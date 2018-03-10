@@ -481,7 +481,7 @@ subroutine IranCalendar(Year,Gyear,UJD,leap,Equinox,MarDay,UHour)
             Iy = Iy + 1
       End Do
 !     Equinox date in Iranian calendar
-      if(dmod(UJD(2),1.D0) >= 0.5D0) then
+      if(Uhour(2) <= noon(2)) then
             Equinox(1) = Year
             Equinox(2) = 1
             Equinox(3) = 1
