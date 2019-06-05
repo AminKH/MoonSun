@@ -215,17 +215,15 @@ namespace ClassMoonSun
 
         public static int JD2WeekDayNum(double TJD)
         {
-            int weekDay = Convert.ToInt32(TJD + 1.5) % 7;
+            int weekDay =  (Convert.ToInt32(TJD) + 2) % 7;
             return weekDay;
         }
 
         public static string WeekDays(int weekDay, int Language = 1)
         {
-            string[] abreWeek = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-            string[] enWeek = {"Monday","Tuesday","Wednsday","Thursday","Friday",
-                "Saturday","Sunday"};
-            string[] faWeek = {"دوشنبه","سه شنبه","چهارشنبه","پنج شنبه","جمعه",
-                "شنبه", "یکشنبه" };            
+            string[] abreWeek = {"Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" };
+            string[] enWeek = {"Saturday","Sunday","Monday","Tuesday","Wednsday","Thursday","Friday"};
+            string[] faWeek = {"شنبه", "یکشنبه","دوشنبه","سه شنبه","چهارشنبه","پنج شنبه","جمعه"};            
 
             switch (Language)
             {
@@ -242,13 +240,11 @@ namespace ClassMoonSun
 
         public static string JUL2WeekDay(double TJD, int Language=1)
         {
-            string[] abreWeek = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-            string[] enWeek = {"Monday","Tuesday","Wednsday","Thursday","Friday",
-                "Saturday","Sunday"};
-            string[] faWeek = {"دوشنبه","سه شنبه","چهارشنبه","پنج شنبه","جمعه",
-                "شنبه", "یکشنبه" };
-
-            int weekDay = Convert.ToInt32(TJD + 1.5) % 7;
+            string[] abreWeek = { "Sat", "Sun","Mon", "Tue", "Wed", "Thu", "Fri"};
+            string[] enWeek = { "Saturday", "Sunday", "Monday", "Tuesday", "Wednsday", "Thursday", "Friday" };
+            string[] faWeek = { "شنبه", "یکشنبه", "دوشنبه", "سه شنبه", "چهارشنبه", "پنج شنبه", "جمعه" };
+                 
+            int weekDay = JD2WeekDayNum(TJD);
 
             switch (Language)
             {
@@ -262,7 +258,6 @@ namespace ClassMoonSun
                     return abreWeek[weekDay]; 
             }
         }
-
 
         public static string pesianMonthName(int monthNumber, int Language = 1)
         {
