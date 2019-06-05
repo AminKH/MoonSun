@@ -241,13 +241,13 @@ character(LEN=9) function JD2WeekDay(TJD, k)
       real(8) :: TJD
       character, dimension(7) :: abweek*3 , week*9
 
-      data week / 'Saturday ','Sunday   ', 'Monday   ', &
-                  'Tuesday  ','Wednesday', 'Thursday ',&
-                  'Friday   '/
+      data week / 'Sunday   ','Monday   ','Tuesday  ', &
+                  'Wednesday','Thursday ','Friday   ',&
+                  'Saturday '/
 
-      data abweek/'Sat','Sun','Mon','Tue','Wed','Thu','Fri'/
+      data abweek/'Sun','Mon','Tue','Wed','Thu','Fri','Sat'/
 
-      idw = 1 + mod(int(TJD+2.5D0),7)
+      idw = JD2WeekDayNum(TJD)
       selectcase(k)
       case(1)
             JD2WeekDay = week(idw)
@@ -265,7 +265,7 @@ end function
       integer :: JD2WeekDayNum
       real(8) :: TJD
 
-      JD2WeekDayNum = 1 + mod(int(TJD+2.5D0),7)
+      JD2WeekDayNum = 1 + mod(int(TJD)+2,7)
 
 end function
 
@@ -4644,7 +4644,7 @@ end subroutine
 !     (or Moon phase) Young Moon Visibility Criterion Based on
 !     "Crescent Illumination and Sky Brightness Contrast Model
 !     by Ahmed Kamil 1 Ahmed and 2Abdul Halim Abdul Aziz
-!     for Iran 0.39 % ± 0.10 %
+!     for Iran 0.39 % Â± 0.10 %
 !     AidAccept, input integer
 !           AidAccept = 0 for Visibility of new Moon with aid is not accepted.
 !           AidAccept = 1 for Visibility of new Moon with aid is accepted.
