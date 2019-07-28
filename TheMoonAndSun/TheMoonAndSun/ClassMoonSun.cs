@@ -10,65 +10,65 @@ namespace ClassMoonSun
     static class MoonSun
     {
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_dayofgyear")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_dayofgyear")]
         public static extern int dayofGyear(ref int Gy, ref int Gm, ref int Gd);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_dayofpyear")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_dayofpyear")]
         public static extern int dayofIyear(ref int Im, ref int Id);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_juldat")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__novas_MOD_juldat")]
         public static extern void JULDAT(ref int Iy, ref int Im, ref int Id, ref double H, ref double TJD);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_rcaldat")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__novas_MOD_rcaldat")]
         public static extern void RCALDAT(ref double TJD, ref int Iy, ref int Im, ref int Id, ref double H); 
 
-         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_iau_jd2cal")]
+         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_jd2cal")]
         public static extern void JD2Cal(ref double DJ1,ref double DJ2,ref int Iy, ref int Im, ref int Id,ref double  FD, ref int J);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_iau_utctai")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_utctai")]
         public static extern void UTC2TAI(ref double UTC1, ref double UTC2, ref double TAI1, ref double TAI2, ref int J);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_iau_taitt")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_taitt")]
         public static extern void TAI2TT(ref double TAI1, ref double TAI2, ref double TT1, ref double TT2, ref int J);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_iau_dat")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_dat")]
         public static extern void iau_DAT(ref int IY, ref int IM, ref int ID, ref double FD, ref double DELTAT, ref int J);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_jdequisolitice")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_jdequisolitice")]
         public static extern double JDEquiSolitice(ref int Iy, ref int k );
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_hour2hms")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_hour2hms")]
         public static extern void Hour2HMS(ref double Hour, ref int H, ref int M, ref int S);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_jd2hijri")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_jd2hijri")]
         public static extern void JD2Hijri(ref double UTJD, ref int HY, ref int HM, ref int HD);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_ircal2jd")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_ircal2jd")]
         public static extern double IrCal2JD(ref int Iry, ref int Irm, ref int Ird, ref double Hour);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_ircal2gregcal")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_ircal2gregcal")]
         public static extern void IrCal2GregCal(ref int Iry, ref int Irm, ref int Ird, ref int Gy, ref int Gm, ref int Gd);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_gregcal2ircal")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_gregcal2ircal")]
         public static extern void GregCal2IrCal(ref int Gy, ref int Gm, ref int Gd, ref int Iry, ref int Irm, ref int Ird);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_jd2ircal")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_jd2ircal")]
         public static extern void JD2IrCal(ref double TJD, ref int Iy, ref int Im, ref int Id, ref double H);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_irancalendar")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_irancalendar")]
         public static extern void IranCalendar(ref int Iyear, [Out] int[] Gyear,[Out] double[] UJD, ref int leap,[Out] int[] Equinox, 
             [Out] int[] MarDay,[Out] double[] UHours);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_isleapyear")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_isleapyear")]
         public static extern bool GregIsLeapYear(ref int Iyear);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_gdays_in_month")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_gdays_in_month")]
         public static extern int GregDaysInmonth(ref int Iyear, ref int Imonth);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_idays_in_month")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_idays_in_month")]
         public static extern int IranianDaysInmonth(ref int Iyear, ref int Imonth);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__calendar_MOD_deltat")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_deltat")]
         public static extern double DELTAT(ref int Iy, ref int Im);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_azanangle")]
@@ -141,7 +141,7 @@ namespace ClassMoonSun
            [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,           
             ref int UT_TT, ref int Iref, [Out] double[] Times, [Out] double[] RSTJD,[Out] double[] RTS_Angles);
         
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__utility_MOD_lspi")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_lspi")]
         public static extern void LSPI(ref int LDA, ref int N, [In] double[] X,
         [In] double[] F, ref double XA, ref double YANS);
         
@@ -258,6 +258,7 @@ namespace ClassMoonSun
                     return abreWeek[weekDay]; 
             }
         }
+
 
         public static string pesianMonthName(int monthNumber, int Language = 1)
         {
