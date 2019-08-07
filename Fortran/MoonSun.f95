@@ -655,7 +655,7 @@ Function equation_time(TJD)
     call DNutate_DObiq_low(TJD,OBLIC,Omega,DNutate,DObliq)
     OBLIC = OBLIC + DObliq/3600.D0
 !     equation of time
-    eqt = (L -0.0057183 - alfa + DNutate*Dcos(OBLIC*DEGRAD)/3600.D0)/15.D0
+    eqt = (L -0.0057183 - alfa + DNutate*Dcos(OBLIC*DEGRAD)/3600.D0)/15.04107D0
 !     et should be less than 20 minutes
     if(Dabs(eqt) < 20.D0/60.D0) then
       equation_time = eqt
@@ -2170,7 +2170,7 @@ subroutine Solar_Position(TJD, Geo,Atmos,UT_TT,SunElev,Zenit,Azim,&
     ksi = (8.794/(3600.D0*R))*DegRad
 !     SIDTIM from NOVAS
     call SIDTIM ( TJDT, 0.D0, 1, AppSidTime )
-    AppSidTime = AppSidTime*15.D0
+    AppSidTime = AppSidTime*15.04107D0
 
     H = AppSidTime + Geo(1) - Alfa
 
@@ -2270,7 +2270,7 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,Transit,Rise
 
 !     Sidereal time from NOVAS package
     call SIDTIM ( TJD0, 0.D0, 1, AppSidTime )
-    AppSidTime = AppSidTime*15.D0
+    AppSidTime = AppSidTime*15.04107D0
 
     REFR = 0.D0
      if (Iref /= 0) then
@@ -2966,7 +2966,7 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
     call Moon_LonG_Lat_Distance(TJDT,Dis_Delta,Lunar_Pi,Ap_Landa,Alfa,delta)
 
     call SIDTIM ( TJD, 0.D0, 1, AppSidTime )
-    AppSidTime =  AppSidTime*15.D0
+    AppSidTime =  AppSidTime*15.04107D0
     HourAngle = (AppSidTime - Alfa + Geo(1))
     Call ChangeAngle(HourAngle)
 
@@ -3003,223 +3003,118 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
 !     0 for not considering atmospheric effects
 
   integer, dimension(3) :: Jdate
-  integer :: IREFR , UT_TT , R_S_Flag , J , K
-  Real(kind=8) :: MoonAngle, Rise_Set1, TJD , RSTJD1 , RSTJD2 , TJDT, Alt1 , RSTJD
-  Real(kind=8) :: Azim , delta , Rise_set , Alt , TJD1 , GeoDia, TopoDia
+  integer :: IREFR , UT_TT , J , K, N
+  integer ::  R_Flag , S_Flag
+  Real(kind=8) :: MoonAngle, Rise_Set1, TJD , RSTJD1 , RSTJD2 , TJDT, Alt1
+  Real(kind=8) :: Azim , delta , Alt , TJD1 , GeoDia, TopoDia,Rn
   real(kind=8), dimension(4) :: Geo
   real(kind=8), dimension(2) :: Atmos,RS_Hours, RSTJDout, RS_Azim
-  logical ::exists
+  real(kind=8) :: RSTJD , STJD, EP
 
-    Rise_Set1 = 12.D0
+    Rise_Set1 = 0.D0
+    R_Flag = 0
+    S_Flag = 0
+    RS_Azim = 0D0
+    RSTJDout = 0.D0
 
     if(TJD1== 0.D0)  call JULDAT (JDate(1),JDate(2),JDaTE(3),Rise_Set1,TJD1)
     TJD = TJD1 - Geo(4)/24.D0
-    RSTJDout = 0.D0
+
     RSTJD1  = TJD
+    RSTJD2 = 0.D0
+    N = 48
+    Rn = 1.D0/real(N,kind=8)
+    Ep = 1D-4
 
     call lunar_position(RSTJD1,UT_TT,TJDT,Geo,Atmos,Alt1,Azim,delta,IREFR)
 
-      do J = 1 ,24
+    if(Alt1 < 0) then
+      RS_Hours = 0D0
+    else
+      RS_Hours = 99D0
+    end if
 
+      do J = 1 ,N
+            k = 0
+            TJD = TJD + Rn
             call lunar_position(TJD,UT_TT,TJDT,Geo,Atmos,Alt,Azim,delta,IREFR)
 
-            if (IREFR == 1) then
+            if(MoonAngle == 0D0) then
                   call MoonSemiDia(TJD, Alt, GeoDia, TopoDia)
-                  MoonAngle = -TopoDia
+                  MoonAngle = -(TopoDia + TopoDia)
+            end if
 
-            elseif(IREFR == 0) then
 
-                  if(MoonAngle == 0.D0) then
-                        call MoonSemiDia(TJD, Alt, GeoDia, TopoDia)
-                        MoonAngle = -TopoDia - 0.56666D0
-
-                  endif
-            endif
-
-            if (Alt1 >MoonAngle ) then
-
-                  R_S_Flag = 2
-
-                  if (Alt > MoonAngle) then
-
+            if (Alt1 >= Alt .and. Alt1 > MoonAngle .and. S_Flag == 0) then
+                  if (Alt >= MoonAngle ) then
                         RSTJD1 = TJD
                   else
                         RSTJD2 = TJD
-                        exit
+                        STJD = RSTJD1
+                        do k = 1, 25
+                             if(dabs(Alt - MoonAngle) < Ep) then
+                                    exit
+                              else
+                                    RSTJD = (STJD + RSTJD2)/2.D0
+                                    call lunar_position(RSTJD,UT_TT,TJDT,Geo,Atmos,&
+                                     Alt,Azim,delta,IREFR)
+                              !
+                                    if(Alt > MoonAngle) then
+                                          STJD = RSTJD
+                                    else
+                                          RSTJD2 = RSTJD
+                                    end if
+                            endif
+                        end do
+
+                  RSTJDout(2) = RSTJD
+                  RS_Hours(2) =  Dmod(RSTJD+0.5D0,1.D0)*24.D0
+                  RS_Azim(2) = Azim
+                  S_Flag = 1
+
                   end if
 
-            else
-                  R_S_Flag = 1
-
-                  if (Alt < MoonAngle) then
-
+            elseif (Alt1 <= Alt .and. Alt1<MoonAngle .and. R_Flag == 0) then
+                  RSTJD2 = 0.D0
+                  if (Alt <= MoonAngle) then
                         RSTJD1 = TJD
                   else
                         RSTJD2 = TJD
-                        exit
-
+                        STJD = RSTJD1
+                        do k = 1, 20
+                             if(dabs(Alt - MoonAngle) < Ep) then
+                                    exit
+                              else
+                                    RSTJD = (STJD + RSTJD2)/2.D0
+                                    call lunar_position(RSTJD,UT_TT,TJDT,Geo,Atmos,&
+                                     Alt,Azim,delta,IREFR)
+                                    if(Alt < MoonAngle) then
+                                          STJD = RSTJD
+                                    else
+                                          RSTJD2 = RSTJD
+                                    end if
+                            endif
+                        end do
+      !
+                  RSTJD = RSTJD + Geo(4)/24.D0
+                  RSTJDout(1) = RSTJD
+                  RS_Hours(1) =  Dmod(RSTJD+0.5D0,1.D0)*24.D0
+                  RS_Azim(1) = Azim
+                  R_Flag = 1
                   end if
 
             endif
             Alt1 = Alt
-            TJD = TJD + 1.D0/24.D0
+
+            if(R_Flag == 1 .and. S_Flag == 1) exit
       end do
 
-      call Moon_Rise_Set(RSTJD1, RSTJD2, Alt1, Geo, Atmos, UT_TT, MoonAngle, &
-             RSTJD ,Rise_set, Azim, IREFR )
-
-      if (R_S_Flag == 1) then
-        RSTJDout(1) = RSTJD
-        RS_Hours(1) = Rise_Set
-        RS_Azim(1) = Azim
-      elseif(R_S_Flag == 2)then
-        RSTJDout(2) = RSTJD
-        RS_Hours(2) =  Rise_Set
-        RS_Azim(2) = Azim
-      end if
-
-      if(J <= 23) then
-            TJD = TJD + 1.D0/24.D0
-            call lunar_position(TJD,UT_TT,TJDT,Geo,Atmos,Alt1,Azim,delta,IREFR)
-            exists = .False.
-            do K = J ,23
-
-                  TJD = TJD + 1.D0/24.D0
-
-                  call lunar_position(TJD,UT_TT,TJDT,Geo,Atmos,Alt,Azim,delta,IREFR)
-
-                   if (IREFR == 1) then
-                        call MoonSemiDia(TJD, Alt, GeoDia, TopoDia)
-                        MoonAngle = -TopoDia
-
-                  elseif(IREFR == 0) then
-
-                        if(MoonAngle == 0.D0) then
-                              call MoonSemiDia(TJD, Alt, GeoDia, TopoDia)
-                              MoonAngle = -TopoDia - 0.56666D0
-
-                        endif
-                  endif
-
-                  if (Alt1 <MoonAngle ) then
-
-                        R_S_Flag = 1
-
-                        if (Alt < MoonAngle) then
-
-                              RSTJD1 = TJD
-                        else
-                              RSTJD2 = TJD
-                              exists = .True.
-                              exit
-                        end if
-
-                  else
-                        R_S_Flag = 2
-
-                        if (Alt > MoonAngle) then
-
-                              RSTJD1 = TJD
-                        else
-                              RSTJD2 = TJD
-                              exists = .True.
-                              exit
-                        end if
-                  endif
-                  Alt1 = Alt
-            end do
-            if(exists) then
-                 call Moon_Rise_Set(RSTJD1, RSTJD2, Alt1, Geo, Atmos, UT_TT, MoonAngle, &
-                  RSTJD ,Rise_set, Azim, IREFR)
-                  if (R_S_Flag == 1) then
-                    RSTJDout(1) = RSTJD
-                    RS_Hours(1) = Rise_Set
-                    RS_Azim(1) = Azim
-                  elseif(R_S_Flag == 2)then
-                    RSTJDout(2) = RSTJD
-                    RS_Hours(2) = Rise_Set
-                    RS_Azim(2) = Azim
-                  end if
-            end if
-      end if
       end subroutine
 
-
-!***************************************************************
-
-      subroutine Moon_Rise_Set(RSTJD1, RSTJD2, Alt1, Geo, Atmos, UT_TT,&
-      MoonAngle, RSTJD ,RS_Hour ,Azim, IREFR)
-
-!     finds Time and Julian Date of Moon rise and set for desired
-!     Altitude of moon
-!     RSTJD1 , RSTJD2 , real numbers. two Julian date of which
-!     rise or set Julian date RSTJD is between them
-!     Alt1, real number, elevation or altitude of moon in degrees
-!           Geo(1) = Longitude, of location in degrees
-!           Geo(2) = Latitude of location, in degrees
-!           Geo(3) = hight of elevation from sea level in meters
-!           Geo(4) = Time  zone of location
-!     Atoms, array of 2 real number of atmospheric properties
-!           Atmos(1) = pressure in milibars
-!           Atmos(2) = temperature in Centigrade
-!     UT_TT integer number 0 for TT will e calculated and 1 for UTC,
-!     MoonAngle, real number, desired elevation of moon at rise or set
-!     in degrees
-!     RSTJD, real number output, Julian day of rise or set
-!     RS_hour , local time of rise or set for location
-!     Azim, real number , Moon Azimuth angle at rise and set times.
-!     IREFR , integer , input, 0 for No Atmospheric effect
-!     1 for Atmospheric effect
-
-      real(kind=8) :: RSTJD1,RSTJD2 , RSTJD ,Alt1 , MoonAngle, Azim ,delta
-      real(kind=8) :: TJDT , Alt , RS_Hour
-      real(kind=8), dimension(4) :: Geo
-      real(kind=8), dimension(2) :: Atmos
-      integer :: I ,IREFR , UT_TT
-
-!       finds time of rise or set of MoonAngle with precision of
-!       1.5+10^-4 degrees
-
-      I= 0
-      Inner1: Do
-            I = I+1
-
-            RSTJD = (RSTJD1 + RSTJD2)/2.D0
-
-            call lunar_position(RSTJD,UT_TT,TJDT,Geo,Atmos,Alt,Azim,delta,IREFR)
-
-            if ( I >= 30 .or. abs(Alt - MoonAngle) <= 1.5D-4) then
-
-                  exit
-            else
-                  if (Alt1> Alt) then
-                        if(Alt < MoonAngle) then
-                              RSTJD2 = RSTJD
-                        else
-                              RSTJD1 = RSTJD
-                        end if
-                  else
-
-                        if(Alt > MoonAngle) then
-                              RSTJD2 = RSTJD
-                        else
-                              RSTJD1 = RSTJD
-                        end if
-                  endif
-
-            end if
-
-      enddo Inner1
-
-      RSTJD = RSTJD + Geo(4)/24.D0
-
-      RS_Hour = Dmod(RSTJD+0.5D0,1.D0)*24.D0
-
-      end subroutine
 
   !*********************************************************************************************************************************
 
-      function Lunar_Parallax(TJD)
+    function Lunar_Parallax(TJD)
 
     real(kind=8) Lunar_Parallax
     real(kind=8) :: TJD , T , Mp , RMp , Lp , RLp
@@ -3582,8 +3477,8 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                   call HijriAdjust(astroNewMoonJD,Geo,UT_TT,Method,B_Ilum, &
                   AidAccept,NewMoonJD(I),Adjust)
             end do
-end subroutine
-
+      end subroutine
+!---------------------------------------------------------------------------------
       subroutine MoonTransit(Jdate ,TJD, Geo, Atmos ,UT_TT , &
                   MoonAngle,TranJDout ,Thour, Televation)
 !     Returns TransJDout , Julian date of moon transit
@@ -3592,59 +3487,100 @@ end subroutine
 
             integer :: UT_TT , IREFR , k
             integer, dimension(3):: Jdate
-            real(Kind=8) :: TranJDout, Thour, Televation, MoonAngle, TJD, Hour
-            real(Kind=8) :: Azim, delta, Elev, TJDT
+            real(Kind=8) :: TranJDout, Thour, Televation, MoonAngle, TJD
+            real(kind=8) :: RTSJD , DelTime, Del , Del1 , Elev1
+            real(Kind=8) :: Azim, delta, Elev, TJDT,  ep
             real(kind=8), dimension(2) :: Atmos, RSTJDout, RS_Hours, RS_Azim
             real(kind=8), dimension(2) :: NRSTJDout ,NRS_Hours, NRS_Azim
-            real(kind=8), dimension(3) :: RSHours, RTSJD
             real(kind=8), dimension(4) :: Geo
 
-            IREFR = 0
-            RTSJD = 0.D0
+            IREFR = 1
             Elev = 0.D0
+            Ep = 0.005D0
+            DelTime = 0D0
             call Moon_Day_Rise_Set(Jdate ,TJD, Geo, Atmos ,UT_TT , &
                   MoonAngle,RSTJDout ,RS_Hours, RS_Azim, IREFR)
+            if(RS_Hours(1) == 0 .and. RS_Hours(2) == 0) then
+                  Televation = 0D0
+                  Thour = 0D0
+                  TranJDout = 0D0
+                  return
+            elseif(RS_Hours(1)==99D0 .and. RS_Hours(2) ==  99) then
+                  Televation = 99D0
+                  Thour = 99D0
+                  TranJDout = 99D0
+                  return
+            elseif(RS_Hours(1)/= 0D0 .and. RS_Hours(2)==0D0 .or. &
+                   RS_Hours(2)< RS_Hours(1) .and. RS_Hours(1)/= 99D0) then
+                  call Moon_Day_Rise_Set(Jdate ,TJD+1D0, Geo, ATmos ,UT_TT , &
+                  MoonAngle,NRSTJDout ,NRS_Hours, NRS_Azim, IREFR)
+                  if(NRS_Hours(2) == 99.D0 )then
+                       Televation = 99D0
+                        Thour = 99D0
+                        TranJDout = 99D0
+                        return
+                  end if
+                  RTSJD = (NRSTJDout(2)+ RSTJDout(1))/2.D0
+                  DelTime = ((NRSTJDout(2)- RSTJDout(1))/(NRS_Azim(2) - RS_Azim(1)))
 
-            RTSJD(1) = RSTJDout(1)
-            RTSJD(3) = RSTJDout(2)
-            RSHours(1) = RS_Hours(1)
-            RSHours(3) = RS_Hours(2)
+            elseif(RS_Hours(2)> RS_Hours(1) .and. RS_Hours(2) /= 99D0 &
+                   .and. RS_Hours(1)/= 0D0)  then
+                  RTSJD = (RSTJDout(1)+ RSTJDout(2))/2.D0
+                  DelTime =((RSTJDout(2)- RSTJDout(1))/(RS_Azim(2) - RS_Azim(1)))
 
-            if(RSTJDout(2) > RSTJDout(1) .and. RSTJDout(1)/= 0.D0) then
-                  RTSJD(2) = (RTSJD(1)+ RTSJD(3))/2.D0
-            elseif(RSTJDout(1)== 0.D0) then
+            elseif(RS_Hours(1)==99.D0 .and. RS_Hours(2)/= 0D0) then
+                  Televation = 99D0
+                  Thour = 99D0
+                  TranJDout = 99D0
+                  return
+            elseif(RS_Hours(1)==0.D0 .and. RS_Hours(2)/= 0D0) then
                   call Moon_Day_Rise_Set(Jdate ,TJD-1D0, Geo, ATmos ,UT_TT , &
                   MoonAngle,NRSTJDout ,NRS_Hours, NRS_Azim, IREFR)
-                  RTSJD(2) = (NRSTJDout(1)+ RTSJD(3))/2.D0
-            elseif(RSTJDout(2) < RSTJDout(1)) then
-                  call Moon_Day_Rise_Set(Jdate ,TJD+1D0,Geo,ATmos,UT_TT, &
-                  MoonAngle,NRSTJDout ,NRS_Hours, NRS_Azim, IREFR)
-                  RTSJD(2) = (RTSJD(1)+ NRSTJDout(2))/2.D0
-                  RSHours(2) = dmod(RTSJD(2)+0.5D0,1.D0)*24D0
-                  if(RSHours(2)<RSHours(1)) then
-                      call Moon_Day_Rise_Set(Jdate ,TJD-1D0, Geo, ATmos ,UT_TT , &
-                        MoonAngle,NRSTJDout ,NRS_Hours, NRS_Azim, IREFR)
-                        RTSJD(2) = (NRSTJDout(1)+ RTSJD(3))/2.D0
-                        Hour = dmod(RTSJD(2)+0.5D0,1.D0)*24D0
-                        if(Hour > RSHours(1)) RTSJD(2) = 0.D0
+                  if(NRS_Hours(1) == 0.D0 )then
+                       Televation = 0D0
+                        Thour = 0D0
+                        TranJDout = 0D0
+                        return
                   end if
-            endif
+                  RTSJD = (NRSTJDout(1)+ RSTJDout(2))/2.D0
+                  DelTime = ((RSTJDout(2)- NRSTJDout(1))/(RS_Azim(2) - NRS_Azim(1)))
 
-            if(RTSJD(2) /= 0.D0)then
-                  do k =1, 8
-                  TJDT = RTSJD(2) - Geo(4)/24.D0
-                  call lunar_position(TJDT,UT_TT,TJDT,Geo,Atmos,Elev,Azim,delta,IREFR)
-                  RTSJD(2) = RTSJD(2) + (180.D0-Azim)/(60.D0*24.D0)
-                  if(dabs(180.D0-Azim)<= 0.2D0) exit
-                  end do
-                  RSHours(2) = dmod(RTSJD(2)+0.5D0,1.D0)*24D0
-            else
-                  RSHours(2) = 0.D0
             end if
+            Del = 0D0
+            Del1 = 0D0
+
+            do k = 1, 25
+                  call lunar_position(RTSJD,UT_TT,TJDT,Geo,Atmos,Elev,Azim,delta,IREFR)
+                  if(dabs(180.D0-Azim) <= Ep .or. Azim<= Ep .or. &
+                  dabs(360.D0-Azim)<= Ep) exit
+
+                  if(Azim> 90D0 .and. Azim<270D0) then
+                        Del = (180.D0-Azim)
+                  elseif(Azim>=270D0 .and. Azim <360D0) then
+                        Del = -(360.D0-Azim)
+                  elseif(Azim<=90D0) then
+                        Del = Azim
+                  end if
+
+                  if(Del > 0D0 ) then
+                        RTSJD = RTSJD + dabs(Del)*DelTime
+                  else
+                        RTSJD = RTSJD - dabs(Del)*DelTime
+                  end if
+
+                  if(Del > 0D0 .and. Del1 <0D0 .or. &
+                        Del<0D0 .and. Del1>0D0)then
+                        DelTime = DelTime/2D0
+                  end if
+                  Del1 = Del
+                  Elev1 = Elev
+            end do
+
             Televation = Elev
-            Thour = RSHours(2)
-            TranJDout = RTSJD(2)
+            Thour = dmod(RTSJD+0.5D0,1.D0)*24D0
+            TranJDout = RTSJD
 
       end subroutine
+
 end module
 
