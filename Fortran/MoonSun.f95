@@ -3068,10 +3068,10 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                         end do
 
                   RSTJDout(2) = RSTJD
+                  RSTJD = RSTJD + Geo(4)/24.D0
                   RS_Hours(2) =  Dmod(RSTJD+0.5D0,1.D0)*24.D0
                   RS_Azim(2) = Azim
                   S_Flag = 1
-
                   end if
 
             elseif (Alt1 <= Alt .and. Alt1<MoonAngle .and. R_Flag == 0) then
@@ -3096,8 +3096,8 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                             endif
                         end do
       !
-                  RSTJD = RSTJD + Geo(4)/24.D0
                   RSTJDout(1) = RSTJD
+                  RSTJD = RSTJD + Geo(4)/24.D0
                   RS_Hours(1) =  Dmod(RSTJD+0.5D0,1.D0)*24.D0
                   RS_Azim(1) = Azim
                   R_Flag = 1
@@ -3497,7 +3497,7 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
             IREFR = 1
             Elev = 0.D0
             Ep = 0.005D0
-            DelTime = 0D0
+
             call Moon_Day_Rise_Set(Jdate ,TJD, Geo, Atmos ,UT_TT , &
                   MoonAngle,RSTJDout ,RS_Hours, RS_Azim, IREFR)
             if(RS_Hours(1) == 0 .and. RS_Hours(2) == 0) then
@@ -3534,7 +3534,7 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                   TranJDout = 99D0
                   return
             elseif(RS_Hours(1)==0.D0 .and. RS_Hours(2)/= 0D0) then
-                  call Moon_Day_Rise_Set(Jdate ,TJD-1D0, Geo, ATmos ,UT_TT , &
+                              call Moon_Day_Rise_Set(Jdate ,TJD-1D0, Geo, ATmos ,UT_TT , &
                   MoonAngle,NRSTJDout ,NRS_Hours, NRS_Azim, IREFR)
                   if(NRS_Hours(1) == 0.D0 )then
                        Televation = 0D0
@@ -3546,8 +3546,6 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                   DelTime = ((RSTJDout(2)- NRSTJDout(1))/(RS_Azim(2) - NRS_Azim(1)))
 
             end if
-            Del = 0D0
-            Del1 = 0D0
 
             do k = 1, 25
                   call lunar_position(RTSJD,UT_TT,TJDT,Geo,Atmos,Elev,Azim,delta,IREFR)
@@ -3569,11 +3567,10 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                   end if
 
                   if(Del > 0D0 .and. Del1 <0D0 .or. &
-                        Del<0D0 .and. Del1>0D0)then
-                        DelTime = DelTime/2D0
-                  end if
+                        Del<0D0 .and. Del1>0D0)DelTime = DelTime/2D0
                   Del1 = Del
                   Elev1 = Elev
+
             end do
 
             Televation = Elev
