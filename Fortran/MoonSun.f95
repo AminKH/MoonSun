@@ -3037,13 +3037,13 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
       do J = 1 ,N
             k = 0
             TJD = TJD + Rn
-            call lunar_position(TJD,UT_TT,TJDT,Geo,Atmos,Alt,Azim,delta,IREFR)
 
-            if(MoonAngle == 0D0) then
+            if(MoonAngle == 0.D0) then
                   call MoonSemiDia(TJD, Alt, GeoDia, TopoDia)
-                  MoonAngle = -(TopoDia + TopoDia)
+                  MoonAngle = -TopoDia
             end if
 
+            call lunar_position(TJD,UT_TT,TJDT,Geo,Atmos,Alt,Azim,delta,IREFR)
 
             if (Alt1 >= Alt .and. Alt1 > MoonAngle .and. S_Flag == 0) then
                   if (Alt >= MoonAngle ) then
@@ -3102,7 +3102,6 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
                   RS_Azim(1) = Azim
                   R_Flag = 1
                   end if
-
             endif
             Alt1 = Alt
 
@@ -3547,6 +3546,9 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
 
             end if
 
+            Del = 0D0
+            Del1 = 0D0
+
             do k = 1, 25
                   call lunar_position(RTSJD,UT_TT,TJDT,Geo,Atmos,Elev,Azim,delta,IREFR)
                   if(dabs(180.D0-Azim) <= Ep .or. Azim<= Ep .or. &
@@ -3574,8 +3576,9 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
             end do
 
             Televation = Elev
-            Thour = dmod(RTSJD+0.5D0,1.D0)*24D0
             TranJDout = RTSJD
+            RTSJD = RTSJD + geo(4)/24D0
+            Thour = dmod(RTSJD+0.5D0,1.D0)*24D0
 
       end subroutine
 
