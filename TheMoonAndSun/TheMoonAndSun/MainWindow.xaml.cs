@@ -1188,8 +1188,8 @@ namespace TheMoonAndSun
                     Iref = 0;
                 }
 
-                double TJD = UJD + Geo[3]/24.0;
-                int weekDaynum = MoonSun.JD2WeekDayNum(TJD);
+                double TJD = UJD;
+                int weekDaynum = MoonSun.JD2WeekDayNum(TJD+Geo[3]/24.0);
 
                 for (int i = 0; i < 12; i++)
                 {
@@ -1567,8 +1567,8 @@ namespace TheMoonAndSun
                 Iref = 1;
             }          
 
-            double TJD = UJD + Geo[3]/24.0;
-            int weekDaynum = MoonSun.JD2WeekDayNum(TJD);
+            double TJD = UJD;
+            int weekDaynum = MoonSun.JD2WeekDayNum(TJD+Geo[3]/24.0);
             w5.islamCalendar.AppendText("======================================================================");
             w5.islamCalendar.AppendText("=========================================================\r\n");
             w5.islamCalendar.AppendText(" Location: " + geoName + ", Longitude: " + Geo[0].ToString("F2")
