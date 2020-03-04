@@ -1188,7 +1188,7 @@ namespace TheMoonAndSun
                     Iref = 0;
                 }
 
-                double TJD = UJD;
+                double TJD = UJD + Geo[3]/24.0;
                 int weekDaynum = MoonSun.JD2WeekDayNum(TJD);
 
                 for (int i = 0; i < 12; i++)
@@ -1567,7 +1567,7 @@ namespace TheMoonAndSun
                 Iref = 1;
             }          
 
-            double TJD = UJD;
+            double TJD = UJD + Geo[3]/24.0;
             int weekDaynum = MoonSun.JD2WeekDayNum(TJD);
             w5.islamCalendar.AppendText("======================================================================");
             w5.islamCalendar.AppendText("=========================================================\r\n");
