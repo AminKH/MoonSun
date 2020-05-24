@@ -1307,7 +1307,7 @@ namespace TheMoonAndSun
                         {
                             if (TJD > dstJD[0] & TJD < dstJD[1])
                             {
-                                for (int m = 0; m < 8; m++)
+                                for (int m = 0; m <= 8; m++)
                                 {
                                     Times[m] += 1.0;
                                 }
