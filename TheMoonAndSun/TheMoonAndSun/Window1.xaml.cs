@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace TheMoonAndSun
+namespace SunMoon
 {
     /// <summary>
     /// Interaction logic for Window1.xaml
@@ -23,7 +23,6 @@ namespace TheMoonAndSun
         {
             InitializeComponent();
         }
-
         private void ListBoxItem_Selected(object sender, RoutedEventArgs e)
         {
             checkWeb("https://www.gps-coordinates.net/");
@@ -45,7 +44,7 @@ namespace TheMoonAndSun
         private void ListBoxItem_Selected_4(object sender, RoutedEventArgs e)
         {
             checkWeb("https://www.timeanddate.com/time/map/");
-        }       
+        }
 
         private void checkWeb(string target)
         {
@@ -59,21 +58,12 @@ namespace TheMoonAndSun
             {
                 if (noBrowser.ErrorCode == -2147467259)
                     MessageBox.Show(noBrowser.Message);
-            }
-            catch (System.Exception other)
-            {
-                MessageBox.Show(other.Message);
-            }
+            }           
         }
 
         private void closeWin1(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        private void helpStart(object sender, RoutedEventArgs e)
-        {
-            System.Windows.Forms.Help.ShowHelp(null,"TheMoonSun.chm");
         }
     }
 }

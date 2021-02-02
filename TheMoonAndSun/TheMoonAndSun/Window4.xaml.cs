@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace TheMoonAndSun
+namespace SunMoon
 {
     /// <summary>
     /// Interaction logic for Window4.xaml
@@ -23,7 +23,6 @@ namespace TheMoonAndSun
         {
             InitializeComponent();
         }
-       
         private void closeW4(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -31,10 +30,8 @@ namespace TheMoonAndSun
 
         private void saveW4(object sender, RoutedEventArgs e)
         {
-            // WriteAllText creates a file, writes the specified string to the file,
-            // and then closes the file.    You do NOT need to call Flush() or Close().
-            // System.IO.File.WriteAllText(@"C:\Works\MoonSun\MoonSunText.txt", result.Text);
-            MainWindow w = new MainWindow();
+           
+            TheMoonAndSun.MainWindow w = new TheMoonAndSun.MainWindow();
             Microsoft.Win32.SaveFileDialog saveFileDialog1 = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog1.FileName = w.Location.Text + "Sun Moon Calendar"; // Default file name
             saveFileDialog1.DefaultExt = ".text"; // Default file extension
@@ -48,22 +45,9 @@ namespace TheMoonAndSun
             {
                 // Save document
                 string filename = saveFileDialog1.FileName;
-                System.IO.File.WriteAllText(saveFileDialog1.FileName, sunMoonCaledar.Text);
+                System.IO.File.WriteAllText(saveFileDialog1.FileName, MoonCaledar.Text);
             }
         }
 
-        private void showFile_Click(object sender, RoutedEventArgs e)
-        {
-            sunMoonCaledar.Text = "";
-            string fileName = fileNameBox.Text;
-            string line = "";
-            using (System.IO.StreamReader sr = new System.IO.StreamReader(fileName))
-            {
-                while ((line = sr.ReadLine()) != null)
-                {
-                    sunMoonCaledar.Text += line+"\n";
-                }
-            }
-        }
     }
 }

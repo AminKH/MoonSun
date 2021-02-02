@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace TheMoonAndSun
+namespace SunMoon
 {
     /// <summary>
     /// Interaction logic for Window3.xaml
@@ -34,7 +34,7 @@ namespace TheMoonAndSun
             // WriteAllText creates a file, writes the specified string to the file,
             // and then closes the file.    You do NOT need to call Flush() or Close().
             // System.IO.File.WriteAllText(@"C:\Works\MoonSun\MoonSunText.txt", result.Text);
-            MainWindow w = new MainWindow();
+            TheMoonAndSun.MainWindow w = new TheMoonAndSun.MainWindow();
             Microsoft.Win32.SaveFileDialog saveFileDialog1 = new Microsoft.Win32.SaveFileDialog();
             saveFileDialog1.FileName = w.Location.Text + "Hijri Months"; // Default file name
             saveFileDialog1.DefaultExt = ".text"; // Default file extension

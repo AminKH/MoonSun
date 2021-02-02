@@ -1,11 +1,11 @@
-﻿<Window x:Class="TheMoonAndSun.Window2"
+﻿<Window x:Class="SunMoon.Window2"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TheMoonAndSun"
+        xmlns:local="clr-namespace:SunMoon"
         mc:Ignorable="d"
-        Title="Moon Phases
+     Title="Moon Phases
         " Height="700" Width="600">
     <Grid Margin="0,0,-2,0">
         <TextBox x:Name="moonPhaseResult" HorizontalAlignment="Left" Height="595" Margin="25,45,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="540" VerticalScrollBarVisibility="Auto"/>

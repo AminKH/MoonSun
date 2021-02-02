@@ -1,7 +1,7 @@
-﻿<Application x:Class="TheMoonAndSun.App"
+﻿<Application x:Class="SunMoon.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:TheMoonAndSun"
+             xmlns:local="clr-namespace:SunMoon"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

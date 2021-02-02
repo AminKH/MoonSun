@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Globalization;
 
 namespace ClassMoonSun
 {
-    static class MoonSun
+    internal static class NativeMethods
     {
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_dayofgyear")]
@@ -56,8 +57,8 @@ namespace ClassMoonSun
         public static extern void JD2IrCal(ref double TJD, ref int Iy, ref int Im, ref int Id, ref double H);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_irancalendar")]
-        public static extern void IranCalendar(ref int Iyear, [Out] int[] Gyear,[Out] double[] UJD, ref int leap,[Out] int[] Equinox, 
-            [Out] int[] MarDay,[Out] double[] UHours);
+        public static extern void IranCalendar(ref int Iyear,ref  int Gyear, ref double UJD,ref bool leap, [Out] int[] Equinox, 
+           ref  int MarDay,ref double UHours);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_isleapyear")]
         public static extern bool GregIsLeapYear(ref int Iyear);
@@ -125,14 +126,6 @@ namespace ClassMoonSun
            [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
            ref double Altitude, ref int UT_TT, ref int Iref, ref double Transit, ref double Rise, ref double Set);
 
-
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_islamsolartimes")]
-        public static extern void IslamSolarTimes(ref double TJD,
-           [MarshalAs(UnmanagedType.LPArray, SizeConst = 3)] int[] Jdate,
-           [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
-           [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
-           [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Angles,
-            ref int UT_TT, ref int Iref, [Out] double[] Times , [Out] double[] NTJD,[Out] double[] RTS_Angles);
         
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_astrosolartimes")]
         public static extern void AstroSolarTimes(ref double TJD,
@@ -141,18 +134,13 @@ namespace ClassMoonSun
            [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,           
             ref int UT_TT, ref int Iref, [Out] double[] Times, [Out] double[] RSTJD,[Out] double[] RTS_Angles);
         
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_lspi")]
-        public static extern void LSPI(ref int LDA, ref int N, [In] double[] X,
-        [In] double[] F, ref double XA, ref double YANS);
-        
+            
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_sun_earth_vector")]
         public static extern void Sun_Earth_Vector(ref double Tc, ref double R);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_astcon")]
-        public static extern void AstroConstants(ref string NAME,ref double FACTOR, ref double CONST);
-
+        
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_moon_mean_long_lat_dist")]
-        public static extern void Moon_Mean_LonG_Lat_Dist(ref double T ,ref double Landa,ref double  Beta ,
+        public static extern void Moon_Mean_Long_Lat_Dist(ref double T ,ref double Landa,ref double  Beta ,
             ref double Delta,ref double Lunar_Pi);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_hijrimonths")]
@@ -168,7 +156,7 @@ namespace ClassMoonSun
             ref double MoonAngle,ref double TranJDout ,ref double Thour,ref double Televation);
        
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_yearmoonphases")]
-        public static extern void yearMoonPhases(ref int year, ref int month, ref int day, [Out] double[,] moonPhaseJD);
+        public static extern void FyearMoonPhases(ref int year, ref int month, ref int day, [Out] double[] moonPhaseJD);
 
         [DllImport("StaticMSISE.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__msise_MOD_gtd7tropo")]
         public static extern void MSIStropo(ref int DY, ref float ALT, ref float Glat, ref float Glong,
@@ -230,9 +218,9 @@ namespace ClassMoonSun
                 case 1:
                     return abreWeek[weekDay];
                 case 2:
-                    return string.Format("{0,9}", enWeek[weekDay]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,9}", enWeek[weekDay]);
                 case 3:
-                    return string.Format("{0,9}", faWeek[weekDay]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,9}", faWeek[weekDay]);
                 default:
                     return abreWeek[weekDay];
             }
@@ -251,14 +239,13 @@ namespace ClassMoonSun
                 case 1:
                     return abreWeek[weekDay];
                 case 2:
-                    return string.Format("{0,9}",enWeek[weekDay]);
+                    return string.Format(CultureInfo.CurrentCulture,"{0,9}", enWeek[weekDay]);
                 case 3:
-                    return string.Format("{0,9}", faWeek[weekDay]);
+                    return string.Format(CultureInfo.CurrentCulture,"{0,9}", faWeek[weekDay]);
                 default:
                     return abreWeek[weekDay]; 
             }
         }
-
 
         public static string pesianMonthName(int monthNumber, int Language = 1)
         {
@@ -277,13 +264,13 @@ namespace ClassMoonSun
             switch (Language)
             {
                 case 1:
-                    return string.Format("{0,12}", persianMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,12}", persianMonths[monthNumber]);
                 case 2:
                     return abrevMonths[monthNumber];
                 case 3:
-                    return string.Format("{0,12}", farsiMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,12}", farsiMonths[monthNumber]);
                 default:
-                    return string.Format("{0,12}", persianMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,12}", persianMonths[monthNumber]);
             }
         }
 
@@ -304,13 +291,13 @@ namespace ClassMoonSun
             switch (Language)
             {
                 case 1:
-                    return string.Format("{0,9}", gregoryMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,9}", gregoryMonths[monthNumber]);
                 case 2:
                     return abrevMonths[monthNumber];
                 case 3:
-                    return string.Format("{0,8}", farsiMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,8}", farsiMonths[monthNumber]);
                 default:
-                    return string.Format("{0,9}", gregoryMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,9}", gregoryMonths[monthNumber]);
             }
         }
 
@@ -330,11 +317,11 @@ namespace ClassMoonSun
             switch (Language)
             {
                 case 1:
-                    return string.Format("{0,18}", hijriMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,18}", hijriMonths[monthNumber]);
                 case 2:
-                    return string.Format("{0,12}", arabicMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,12}", arabicMonths[monthNumber]);
                 default:
-                    return string.Format("{0,18}", hijriMonths[monthNumber]);
+                    return string.Format(CultureInfo.CurrentCulture, "{0,18}", hijriMonths[monthNumber]);
             }
         }
 
@@ -371,6 +358,26 @@ namespace ClassMoonSun
                     return "";
             }
         }
+
+        public static void YearMoonPhases(int IYear,int Imonth,int Iday,double [][] MoonPhaseJD)
+        {
+            // returns array of Julian day of moon phases for one year
+
+            double[] moonPhaseJD1 = new double[60];
+
+            FyearMoonPhases(ref IYear, ref Imonth, ref Iday,  moonPhaseJD1);
+
+            for(int i=0; i<=14; i++)
+            {
+                for(int j=0; j<=3; j++)
+                {
+                    MoonPhaseJD[i][j] = moonPhaseJD1[i + j * 15];
+                }
+            }
+
+        }
+            
+          
     }
    
 }

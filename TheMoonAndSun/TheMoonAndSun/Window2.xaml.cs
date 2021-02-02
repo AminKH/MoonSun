@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace TheMoonAndSun
+namespace SunMoon
 {
     /// <summary>
     /// Interaction logic for Window2.xaml
@@ -22,7 +22,6 @@ namespace TheMoonAndSun
         public Window2()
         {
             InitializeComponent();
-           
         }
 
         private void MoonPhases(object sender, RoutedEventArgs e)
@@ -31,9 +30,9 @@ namespace TheMoonAndSun
             // and then closes the file.    You do NOT need to call Flush() or Close().
             // System.IO.File.WriteAllText(@"C:\Works\MoonSun\MoonSunText.txt", result.Text);
 
-            MainWindow w = new MainWindow();
+            TheMoonAndSun.MainWindow w = new TheMoonAndSun.MainWindow();
             Microsoft.Win32.SaveFileDialog saveFileDialog1 = new Microsoft.Win32.SaveFileDialog();
-            saveFileDialog1.FileName = w.Location.Text +  "Moon Phases"; // Default file name
+            saveFileDialog1.FileName = w.Location.Text + "Moon Phases"; // Default file name
             saveFileDialog1.DefaultExt = ".text"; // Default file extension
             saveFileDialog1.Filter = "Text documents (.txt)|*.txt"; // Filter files by extension
 

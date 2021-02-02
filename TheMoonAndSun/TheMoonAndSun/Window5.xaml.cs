@@ -11,35 +11,32 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using ClassMoonSun;
 
-
-
-namespace TheMoonAndSun
+namespace SunMoon
 {
     /// <summary>
     /// Interaction logic for Window5.xaml
     /// </summary>
     public partial class Window5 : Window
     {
-        
         public Window5()
         {
             InitializeComponent();
-        }        
+        }
 
-       
-   
-        private void closeWin5(object sender, RoutedEventArgs e)
+        private void closeW5(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
-        private void saveislamClendar(object sender, RoutedEventArgs e)
+        private void saveW5(object sender, RoutedEventArgs e)
         {
-            MainWindow w = new MainWindow();
+            // WriteAllText creates a file, writes the specified string to the file,
+            // and then closes the file.    You do NOT need to call Flush() or Close().
+            // System.IO.File.WriteAllText(@"C:\Works\MoonSun\MoonSunText.txt", result.Text);
+            TheMoonAndSun.MainWindow w = new TheMoonAndSun.MainWindow();
             Microsoft.Win32.SaveFileDialog saveFileDialog1 = new Microsoft.Win32.SaveFileDialog();
-            saveFileDialog1.FileName = w.Location.Text + " Islam Calendar"; // Default file name
+            saveFileDialog1.FileName = w.Location.Text + "Sun Moon Calendar"; // Default file name
             saveFileDialog1.DefaultExt = ".text"; // Default file extension
             saveFileDialog1.Filter = "Text documents (.txt)|*.txt"; // Filter files by extension
 
@@ -51,13 +48,8 @@ namespace TheMoonAndSun
             {
                 // Save document
                 string filename = saveFileDialog1.FileName;
-                System.IO.File.WriteAllText(saveFileDialog1.FileName, islamCalendar.Text);
+                System.IO.File.WriteAllText(saveFileDialog1.FileName, sunMoonCaledar.Text);
             }
-        }
-
-        private void islamCalendar_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
+        }        
     }
 }
