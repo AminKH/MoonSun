@@ -259,16 +259,15 @@ program main
             '  6- Hijri Months of Year'/ &
             '  7- Sun and Moon Calendar for a year'/&
             '  8- Moon Calendar for a year'/&
-            '  9- Islam Prayer times calendar for a year '/&
-            '  10- Start Over '/&
-            '  11- Exit' )
+            '  9- Start Over '/&
+            '  10- Exit' )
       print*,
       write(*,'(A,$)') ' Your Option? '
       read(*,'(I3)') options
 
-      if(options== 11) then
+      if(options== 10) then
             return
-      elseif(options==10) then
+      elseif(options==9) then
             write(*,49)
  49   format(' Start From: '/&
              ' 1- New Location'/&
@@ -514,9 +513,6 @@ program main
                   call MoonCalendar(LocatName,Iyear,CalenType,Geo,airModel,&
                   Method,B_Ilum,aidAccept,DST)
             end if
-
-      elseif(options==9)then
-
 
       end if
 
@@ -878,7 +874,7 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       DATA GdaysInMonth /31,28,31,30,31,30,31,31,30,31,30,31/
 
       IREFR = 1
-      UT_TT = 1
+      UT_TT = 0
 
       if(CalenType == 1)then
             call IranCalendar(IYear,Gyear,UJD,isleap,Equinox,MarDay,UHour)

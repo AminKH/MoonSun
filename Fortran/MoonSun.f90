@@ -489,21 +489,22 @@ subroutine IranCalendar(Year,Gyear,UJD,isleap,Equinox,MarDay,UHour)
 !     UHour, real numbers for time of equinox at 52.5 longitude
 
       integer :: year, Iy, leap
-      integer ::  M,  I, J
+      integer ::  M,  I, UT_TT
       integer :: MarDay, Gyear
       integer, dimension(1:2) :: MDay,Gy
       integer, dimension(3) :: Equinox, Jdate
-      integer,dimension(4) :: IHMSF
       real(kind=8) :: JDT, JDE, UJD, Uhour
-      real(kind=8),dimension(3):: Times,RSTJD,angles
-      real(kind=8),dimension(0:2) :: EJD, Uh, noon
+      real(kind=8),dimension(2) :: EJD, Uh, noon
       real(kind=8),dimension(4) :: Geo
       real(kind=8),dimension(2) :: Atmos
+      real(kind=8) :: Transit,Rise,Set,NTJD
+      real(kind=8) :: Dhour,DTJD,SunElev
       logical :: isLeap
 
       data atmos / 898.76D0, 10.D0 /
       data Geo / 52.5D0 , 32.5D0 , 1000.D0,3.5D0 /
   !
+      UT_TT = 0
       leap = 0
 
       Iy = Year
@@ -513,10 +514,7 @@ subroutine IranCalendar(Year,Gyear,UJD,isleap,Equinox,MarDay,UHour)
             Gy(I) = Iy +621
             JDE = trueJDEquiSolitice(Gy(I), 0) ! Julian date of equinox
             EJD(I) = JDE + Geo(4)/24.D0
-
-            CALL iau_D2DTF ('UTC',1,EJD(I), 0D0, Gy(I),M, MDay(I),IHMSF, J )
-            Uh(I) = real(IHMSF(1),Kind=8)+real(IHMSF(2),kind=8)/60.D0 &
-        &        +real(IHMSF(3),kind=8)/3600.D0
+            call RCALDAT(EJD(I),Gy(I),M,MDay(I),Uh(I))
 
             JDT = dint(JDE)
             if(dmod(JDE,1.D0) <= 0.5D0) then
@@ -524,8 +522,11 @@ subroutine IranCalendar(Year,Gyear,UJD,isleap,Equinox,MarDay,UHour)
             else
                 JDT = JDT + 0.5D0
             end if
-            call SolarTimes(dint(JDT),Jdate,Geo,Atmos,1,1,Times,RSTJD,angles)
-            noon(I) = Times(2)
+            call SunRise_Set_Noon(JDT,JDate,Geo,Atmos,-0.2665694D0,UT_TT,1,Transit,Rise,Set)
+            NTJD = JDT + (Transit-Geo(4))/24.D0
+            call Solar_Transit(Geo,Atmos,NTJD,UT_TT,0.1D0,5.D-5,Dhour,DTJD,SunElev,1)
+
+            noon(I) = Dhour
 
             if(I > 1) then
                   if(Uh(I-1) < noon(I-1).and. Uh(I) > noon(I)) then
