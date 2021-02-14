@@ -65,8 +65,8 @@
         </Label>
         <TextBox x:Name="localMin" HorizontalAlignment="Left" Height="25" Margin="176,160,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="24" RenderTransformOrigin="-0.048,-0.348"/>
         <TextBox x:Name="localSec" HorizontalAlignment="Left" Height="25" Margin="214,160,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="22" RenderTransformOrigin="0.492,0.957"/>
-        <TextBox x:Name="tempBox" HorizontalAlignment="Left" Height="24" Margin="518,102,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="47"/>
-        <TextBox x:Name="pressBox" HorizontalAlignment="Left" Height="24" Margin="565,102,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="63"/>
+        <TextBox x:Name="tempBox" HorizontalAlignment="Left" Height="24" Margin="507,102,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="58"/>
+        <TextBox x:Name="pressBox" HorizontalAlignment="Left" Height="24" Margin="565,102,0,0" TextWrapping="Wrap" Text=" " VerticalAlignment="Top" Width="52"/>
         <Menu x:Name="menu" HorizontalAlignment="Left" Height="20" Margin="10,5,0,0" VerticalAlignment="Top" Width="473">
             <MenuItem Header="File">
                 <MenuItem Header="Save Location" Click="saveLocation"/>
@@ -101,14 +101,14 @@
         </ComboBox>
         <TextBlock x:Name="textBlock1" HorizontalAlignment="Left" Margin="423,26,0,0" TextWrapping="Wrap" Text="Air Type" VerticalAlignment="Top" FontSize="10"/>
         <CheckBox x:Name="aidAccept" Content="New moon sighting Aided eye" HorizontalAlignment="Left" Margin="374,133,0,0" VerticalAlignment="Top" Width="187" Height="31" RenderTransformOrigin="1,0.333" />
-        <Label Content="Temp" HorizontalAlignment="Left" Margin="527,76,0,0" VerticalAlignment="Top" Height="23" FontSize="10"/>
-        <Label Content="Press" HorizontalAlignment="Left" Margin="566,77,0,0" VerticalAlignment="Top" Height="23" FontSize="10" RenderTransformOrigin="0.5,0.5">
+        <Label Content="Temp." HorizontalAlignment="Left" Margin="565,77,0,0" VerticalAlignment="Top" Height="23" FontSize="10" Width="52"/>
+        <Label Content="Pressure" HorizontalAlignment="Left" Margin="511,75,0,0" VerticalAlignment="Top" Height="23" FontSize="10" RenderTransformOrigin="0.695,0.384" Width="47">
             <Label.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
                     <SkewTransform/>
                     <RotateTransform Angle="1.407"/>
-                    <TranslateTransform/>
+                    <TranslateTransform X="0.064" Y="0.159"/>
                 </TransformGroup>
             </Label.RenderTransform>
         </Label>
