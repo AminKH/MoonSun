@@ -216,7 +216,10 @@ program main
       print*,
 
       call AstroSolarTimes(SMUJD,Jdate,Geo,atmos,UT_TT,IREF,sunTimes,RSTJD,RTSangles)
+      call iau_DAT ( today(3),today(2),today(1),sunTimes(5)/24.D0, DELTA_T, J )
+
       do I=1,9
+            sunTimes(I) = sunTimes(I) - (DELTA_T+32.184D0)/3600.D0
             call Hour2HMS(sunTimes(I),H,M,S)
                   STimes(I) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
                   ':'//trim(I2str(S)))
@@ -229,12 +232,13 @@ program main
                   '  Civic Twilight: ', STimes(3)
       write(*,*)' Astronomical Twilight: ',STimes(9),'  Nautical Twilight: ',STimes(8),&
                   '  Civic Twilight: ', STimes(7)
-
+      MoonAngle = 0.D0
       call Moon_Day_Rise_Set(Jdate,SMUJD,Geo,atmos,UT_TT,MoonAngle,moonJDRS,mRShours,moonAzim,IREF)
 
       print*,
 
       do I=1,2
+            mRShours(I) = mRShours(I) - (DELTA_T+32.184D0)/3600.D0
             call Hour2HMS(mRShours(I),H,M,S)
             MTimes(I) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
             ':'//trim(I2str(S))//'-'//trim(D2str(moonAzim(I))))
@@ -716,8 +720,9 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             do J=1,Days
 
                   call AstroSolarTimes(DJD,Jdate,Geo,atmos,UT_TT,IREFR,RTimes,RSTJD,RTSangles)
-
+                  RTimes = RTimes - (DELTA_T+32.184D0)/3600.D0
                   call Moon_Day_Rise_Set(Jdate,DJD,Geo,ATmos,UT_TT,MoonAngle,RSTJDout,RS_Hours,RS_Azim,IREFR)
+                  RS_Hours = RS_Hours - (DELTA_T+32.184D0)/3600.D0
 
                   if(DJD>= DST(1).and. DJD <= DST(2)) then
                         RTimes = RTimes + 1.D0
@@ -874,7 +879,7 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       DATA GdaysInMonth /31,28,31,30,31,30,31,31,30,31,30,31/
 
       IREFR = 1
-      UT_TT = 0
+      UT_TT = 1
 
       if(CalenType == 1)then
             call IranCalendar(IYear,Gyear,UJD,isleap,Equinox,MarDay,UHour)
@@ -1033,6 +1038,7 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
 
                   do km = 1 , 3
                        if(RSHours(km)/= 0.D0 .and. RSHours(km)/=99.D0)then
+                              RSHours(km)= RSHours(km) - (DELTA_T+32.184D0)/3600.D0
                               call Hour2HMS(RSHours(1), H , M , S)
                               if(km == 2) then
                                     MTimes(km) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&

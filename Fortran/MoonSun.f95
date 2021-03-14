@@ -1679,13 +1679,11 @@ subroutine Moon_Illum_Fractio(Jdate,Hour,TJD,UT_TT,Ilum_Ratio)
 
 !    call Pi_DegRad(PI, DegRad)
 
-    if (TJD == 0D0) then
-        call JULDAT (JDate(1),JDate(2),JDate(3),Hour,TJD)
-        if (UT_TT == 0) then
-              CALL iau_UTCTAI ( TJD,0.D0 , A1, A2, J )
-              CALL iau_TAITT ( A1, A2, T1, T2, J )
-              TTJD = T1 + T2
-        end if
+    if (TJD == 0D0) call JULDAT (JDate(1),JDate(2),JDate(3),Hour,TJD)
+    if (UT_TT == 1) then
+          CALL iau_UTCTAI ( TJD,0.D0 , A1, A2, J )
+          CALL iau_TAITT ( A1, A2, T1, T2, J )
+          TTJD = T1 + T2
     else
         TTJD = TJD
     end if
@@ -2301,7 +2299,7 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,Transit,Rise
     Rlat = dabs(Geo(2))*DegRad
 
     if (TJD == 0.D0) call JULDAT (JDate(1),JDate(2),JDate(3),0.D0,TJD)
-    if (UT_TT == 0) then
+    if (UT_TT == 1) then
               CALL iau_UTCTAI ( TJD,0.D0 , A1, A2, J )
               CALL iau_TAITT ( A1, A2, T1, T2, J )
               TJD0 = T1 + T2
@@ -2311,7 +2309,7 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,Transit,Rise
 
 !     Sidereal time from NOVAS package
     call SIDTIM ( TJD0, 0.D0, 1, AppSidTime )
-    AppSidTime = AppSidTime*15.04107D0
+    AppSidTime = AppSidTime*15.D0
 
     REFR = 0.D0
      if (Iref /= 0) then
@@ -2383,10 +2381,10 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,Transit,Rise
     call horizontal_coords(Geo,Hp(2),Deltap2,Atmos,h2,Azim,0)
 
     Rise = (m(0)+(h0-SunAlt)/(360.D0*Dcos(Deltap0*DegRad)*Dcos(Rlat)&
-            *Dsin(Hp(0)*DegRad)))*24D0 + Geo(4)
+            *Dsin(Hp(0)*DegRad)))*24.D0 + Geo(4)
 
-    Set = (m(2)+(h2-SunAlt)/(360D0*Dcos(Deltap2*DegRad)*Dcos(Rlat)&
-            *Dsin(Hp(2)*DegRad)))*24D0 + Geo(4)
+    Set = (m(2)+(h2-SunAlt)/(360.D0*Dcos(Deltap2*DegRad)*Dcos(Rlat)&
+            *Dsin(Hp(2)*DegRad)))*24.D0 + Geo(4)
     if(Set<0) Then
       Set = 24.D0 + Set
     end if
@@ -2815,7 +2813,7 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
 
 !    call Pi_DegRad(PI,DegRad)
 
-    if (UT_TT == 0) then
+    if (UT_TT == 1) then
         CALL iau_UTCTAI ( TJD,0.D0 , A1, A2, J )
         CALL iau_TAITT ( A1, A2, T1, T2, J )
         TJDT = T1+T2
@@ -2900,38 +2898,36 @@ subroutine AstroSolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angle
             call lunar_position(TJD,UT_TT,TJDT,Geo,Atmos,Alt,Azim,delta,IREFR)
 
             if(MoonAngle == 0.D0) then
-                  call MoonSemiDia(TJD, Alt, GeoDia, TopoDia)
-                  MoonAngle = -(TopoDia + TopoDia)
+                  call MoonSemiDia(TJD1, Alt, GeoDia, TopoDia)
+                  MoonAngle = 0.7275D0*Lunar_Parallax(TJD1)- TopoDia
             end if
 
 
             if (Alt1 >= Alt .and. Alt1 > MoonAngle .and. S_Flag == 0) then
-                  if (Alt >= MoonAngle ) then
+                  if (Alt >= -MoonAngle ) then
                         RSTJD1 = TJD
                   else
                         RSTJD2 = TJD
                         STJD = RSTJD1
                         do k = 1, 25
-                             if(dabs(Alt - MoonAngle) < Ep) then
+                             if(dabs(Alt + MoonAngle) < Ep) then
                                     exit
                               else
                                     RSTJD = (STJD + RSTJD2)/2.D0
                                     call lunar_position(RSTJD,UT_TT,TJDT,Geo,Atmos,&
                                      Alt,Azim,delta,IREFR)
                               !
-                                    if(Alt > MoonAngle) then
+                                    if(Alt > -MoonAngle) then
                                           STJD = RSTJD
                                     else
                                           RSTJD2 = RSTJD
                                     end if
                             endif
                         end do
-
                   RSTJDout(2) = RSTJD
                   RS_Hours(2) =  Dmod(RSTJD-0.5D0+Geo(4)/24.D0,1.D0)*24.D0
                   RS_Azim(2) = Azim
                   S_Flag = 1
-
                   end if
 
             elseif (Alt1 <= Alt .and. Alt1<MoonAngle .and. R_Flag == 0) then
