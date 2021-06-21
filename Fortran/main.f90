@@ -4,7 +4,6 @@ program main
 
       USE MoonSun
       USE MSISE
-      USE NOVAS
       USE SOFA
 
       implicit none
@@ -19,22 +18,25 @@ program main
 
       real(kind=8) :: Hour,B_Ilum,UJDtoday, LJD, JDM, DS
       real(kind=8) :: JDtoday,TJDT,moonAlt,moonAz,moondel
-      real(kind=8) :: SMUJD, MoonAngle, newMoonJD, FdayHijriJD
-      real(kind=8), dimension(2) :: atmos,moonJDRS,mRShours,moonAzim,DST
+      real(kind=8) :: SMUJD, newMoonJD, FdayHijriJD
+      real(kind=8) :: FD, D1, D2,ilumRatio
+      real(kind=8), dimension(2) :: atmos,DST
       real(kind=8), dimension(3) :: RSTJD,RTSangles
       real(kind=8), dimension(4) :: Geo
       real(kind=8), dimension(9) :: sunTimes
       real(kind=8), dimension(0:3) :: TJD
       real(kind=8), dimension(0:14,0:3):: MoonPhaseJD
       real(kind=8), dimension(0:14) :: HijriJD
+      real(kind=8), dimension(0:2) :: RTSHours,RTSJD,RTSazim
+      real(kind=8),dimension(6) :: mRTSJD,mRTShour,mRTSangles
+      character(8), dimension(6) :: mEvents
       real(kind=4) :: alt,lat,long,Stl,Den,Tem,Pre
       real(kind=8) :: sunAlt,sunZen,sunAz,topAlfa,topoDelta
-      real(8) :: mu,Density,a,ts,pp,rm
-      real(8) :: qm,RR, UnewMoonJD,DELTA_T
-
+      real(kind=8) :: mu,Density,a,ts,pp,rm
+      real(kind=8) :: qm,RR, UnewMoonJD,DELTA_T, moonAl
       character(16) ,dimension(9) :: STimes
       character(10),dimension(7) :: weekDays
-      character(16),dimension(2) :: MTimes
+ !     character(16),dimension(2) :: MTimes
       character(16),dimension(0:3):: EquiSolislael
       character(13),dimension(0:3) :: GregDate, PersDate, moonTime
       character(44) :: HijriDate
@@ -44,8 +46,9 @@ program main
       character(9) :: weekday
       character(4) :: YearChar
       character(1) :: Responce
-
+      character(LEN=8) :: Mtime,Mangle,Milum
       integer,dimension(3) :: today, now, Irtoday
+      real(kind=8),dimension(3) :: Times,RSTJD3,RTS_Angles
 
       data weekDays/'Sunday   ','Monday   ','Tuesday  ', &
                     'Wednesday','Thursday ','Friday   ','Saturday '/
@@ -71,7 +74,7 @@ program main
      & ' negative 0.0 to -12.0 for western hemisphere.'/ &
      & 1X,63('*')/)
 
-     UT_TT = 1
+     UT_TT = 0
      IREF = 1
 
  70   call getLocation(LocatName,Geo)
@@ -148,7 +151,7 @@ program main
 
      if(airModel == 1) then
             call stdatm(Geo(3),atmos(2),atmos(1),Density,a,mu,ts,rr,pp,rm,qm,0,kk)
-            atmos(1) = atmos(1)/1.D3
+            atmos(1) = atmos(1)/1.D2
             atmos(2) = atmos(2)- 273.15D0
       elseif(airModel /= 1) then
             alt = real(Geo(3),kind=4)
@@ -160,13 +163,15 @@ program main
             atmos(2) = real(Tem,kind=8)
             atmos(1) = real(Pre,kind=8)
      end if
+
       Hour = real(now(1),kind=8) + real(now(2),kind=8)/60.D0 &
             + real(now(3),kind=8)/3600.D0
 
-
-     call JULDAT(today(3),today(2),today(1),Hour,JDtoday)
+     call iau_DTF2D ( '*', today(3),today(2),today(1), now(1), now(2),real(now(3),kind=8), D1, D2, J )
+     JDtoday =  D1 + D2
      UJDtoday = JDtoday - Geo(4)/24.D0
-     call JULDAT(today(3),today(2),today(1),0.D0,SMUJD)
+
+     SMUJD = CAL2JD ( today(3),today(2),today(1) )
 
      weekday = JD2WeekDay(SMUJD,1)
 
@@ -207,7 +212,7 @@ program main
             , F5.2,3X,' Density: ',F5.3//)
 
       call Solar_Position(UJDtoday,Geo,atmos,UT_TT,sunAlt,sunZen,sunAz,topAlfa,topoDelta,IREF)
-      call lunar_position(UJDtoday,UT_TT,TJDT,Geo,Atmos,moonAlt,moonAz,moondel,IREF)
+      call lunar_position(UJDtoday,UT_TT,TJDT,Geo,Atmos,moonAlt,moonAz,moonAl,moondel,IREF)
 
       write(*,30)sunAlt,sunAz,moonAlt, moonAz
 30    format(' Sun Altitude Angle(Degrees): ',F6.2,3X,'Sun Azimuth Angle(Degrees): ',F7.2/&
@@ -216,36 +221,41 @@ program main
       print*,
 
       call AstroSolarTimes(SMUJD,Jdate,Geo,atmos,UT_TT,IREF,sunTimes,RSTJD,RTSangles)
-      call iau_DAT ( today(3),today(2),today(1),sunTimes(5)/24.D0, DELTA_T, J )
+   !   call iau_DAT ( today(3),today(2),today(1),sunTimes(5)/24.D0, DELTA_T, J )
+
 
       do I=1,9
-            sunTimes(I) = sunTimes(I) - (DELTA_T+32.184D0)/3600.D0
+          !  sunTimes(I) = sunTimes(I) + (DELTA_T+32.184D0)/3600.D0
             call Hour2HMS(sunTimes(I),H,M,S)
                   STimes(I) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
                   ':'//trim(I2str(S)))
       end do
 
-      write(*,*)' SunRise: ',STimes(4),'   Noon: ',STimes(5), '   SunSet: ', STimes(6)
+      write(*,*)'  SunRise: ',STimes(4),'   Noon: ',STimes(5), '   SunSet: ', STimes(6)
       write(*,'(A,F7.3,3X,A,F6.3,3X,A,F7.3)')' SunRise Azimuth: ',RTSangles(1)&
             , 'Noon Altitude: ',RTSangles(2),'SunSet Azimuth: ', RTSangles(3)
       write(*,*)' Astronomical Twilight: ',STimes(1),'  Nautical Twilight: ',STimes(2),&
                   '  Civic Twilight: ', STimes(3)
       write(*,*)' Astronomical Twilight: ',STimes(9),'  Nautical Twilight: ',STimes(8),&
                   '  Civic Twilight: ', STimes(7)
-      MoonAngle = 0.D0
-      call Moon_Day_Rise_Set(Jdate,SMUJD,Geo,atmos,UT_TT,MoonAngle,moonJDRS,mRShours,moonAzim,IREF)
 
-      print*,
+      call SolarTimes(SMUJD,Jdate,Geo,Atmos,UT_TT,IREF,Times,RSTJD3,RTS_Angles)
+    !  write(*,*)Times
 
-      do I=1,2
-            mRShours(I) = mRShours(I) - (DELTA_T+32.184D0)/3600.D0
-            call Hour2HMS(mRShours(I),H,M,S)
-            MTimes(I) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
-            ':'//trim(I2str(S))//'-'//trim(D2str(moonAzim(I))))
-      end do
+      write(*,*) 'MOON'
+      call Moon_RTS(Jdate ,SMUJD, Geo, Atmos ,UT_TT,IREF,RTShours,RTSJD,RTSAzim)
 
-      write(*,*)' MoonRise: ',MTimes(1),'   MoonSet: ', MTimes(2)
+      call Moon_RiseTranSet(Jdate,SMUJD,Geo,Atmos,UT_TT,IREF,mEvents,mRTSJD,mRTShour,mRTSangles)
 
+      do J = 1 , 6
+            if(mRTShour(J) /=0.D0 .and. mRTShour(J) /= 99.D0) then
+                  Mtime = Hour2text(mRTShour(J))
+                  Mangle = ','//adjustl(trim(D2str(mRTSangles(J))))
+                  call Moon_Illum_Fractio(Jdate,Hour,mRTSJD(J),UT_TT,ilumRatio)
+                  Milum = ','//adjustl(trim(D2str(ilumRatio)))
+                  write(*,'(2X,A,2X,A,2X,$)') adjustl(trim(mEvents(J)))//Mtime//Mangle//Milum,','
+            end if
+     end do
       print*,
       print*,
 
@@ -310,12 +320,13 @@ program main
              ' 3- North America')
             read(*,'(I1)') DSTop
       if(DSTop == 1) then
-           call JULDAT(Year,3,1,0.D0,DS)
+            DS = CAL2JD ( Year,3,1)
            do while(JD2WeekDayNum(DS)/= 2)
             DS = DS + 1
            end do
            DST(1) = DS + 21
-           call JULDAT(Year,10,1,0.D0,DS)
+           DS =CAL2JD ( Year,10,1)
+
            do while(JD2WeekDayNum(DS)/= 2)
             DS = DS + 1
            end do
@@ -329,12 +340,14 @@ program main
             DST(1) = IrCal2JD(Year,1,2,0.D0)
             DST(2) = IrCal2JD(Year,6,31,0.D0)
       elseif(DSTop == 3) then
-            call JULDAT(Year,3,1,0.D0,DS)
+            DS = CAL2JD ( Year,3,1)
            do while(JD2WeekDayNum(DS)/= 2)
             DS = DS + 1
            end do
            DST(1) = DS + 7
-           call JULDAT(Year,11,1,0.D0,DS)
+            DS = CAL2JD ( Year,11,1)
+      !      DS = DS + DJM
+      !     call JULDAT(Year,11,1,0.D0,DS)
            do while(JD2WeekDayNum(DS)/= 2)
             DS = DS + 1
            end do
@@ -350,7 +363,10 @@ program main
 
             do k = 0,3
                   TJD(k) = TrueJDEquiSolitice(Year,k)
-                  call RCALDAT(TJD(k),Gy,Gm,Gd,Hour)
+            !      call RCALDAT(TJD(k),Gy,Gm,Gd,Hour)
+                  call JD2CAL(TJD(k),Gy,Gm,Gd,Hour)
+                !  call iau_JD2CAL (TJD(k),0.D0,Gy,Gm,Gd,FD,J )
+                !  Hour = FD*24.D0
                   call iau_DAT(Gy,Gm,Gd,Hour/24D0,DELTA_T,J)
                   Hour = Hour - (DELTA_T+32.184D0)/3600.D0
                   call Hour2HMS(Hour,H,M,S)
@@ -390,7 +406,9 @@ program main
 
             do k = 0,3
                   JDM = (MoonPhaseJD(I,k)) + Geo(4)/24.D0
-                  call RCALDAT (JDM,Gy,Gm,Gd,Hour)
+            !      call RCALDAT (JDM,Gy,Gm,Gd,Hour)
+                  call iau_JD2CAL (JDM,0.D0,Gy,Gm,Gd,FD,J )
+                  Hour = FD*24.D0
                   GregDate(k) = adjustl(trim(I2str(Gy))//'/'//trim(I2str(Gm))//&
                   '/'//trim(I2str(Gd)))
                   call JD2IrCal(JDM,Iry,Irm,Ird,Hour)
@@ -457,7 +475,9 @@ program main
             call JD2Hijri(JDM+14.D0,Hy,Hm,Hd)
             Hijridate = adjustl('First(1) of '//trim(HijriMonthName(Hm))//&
             ', year '//trim(I2str(Hy)))
-            call RCALDAT (JDM,Gy,Gm,Gd,Hour)
+      !      call RCALDAT (JDM,Gy,Gm,Gd,Hour)
+            call iau_JD2CAL (JDM,0.D0,Gy,Gm,Gd,FD,J )
+            Hour = FD*24.D0
             HGregDate = adjustl(trim(I2str(Gy))//'/'//trim(I2str(Gm))//&
             '/'//trim(I2str(Gd)))
             call JD2IrCal(JDM,Iry,Irm,Ird,Hour)
@@ -501,7 +521,7 @@ program main
 
             if(Responce == 'Y' .or. Responce == 'y') then
                   call SunMoonCalendar(LocatName,Iyear,CalenType,Geo,airModel,&
-                  Method,B_Ilum,aidAccept,DST)
+                  Method,B_Ilum,aidAccept,DST,UT_TT,IREF)
             end if
 
       elseif(options==8) then
@@ -515,7 +535,7 @@ program main
 
             if(Responce == 'Y' .or. Responce == 'y') then
                   call MoonCalendar(LocatName,Iyear,CalenType,Geo,airModel,&
-                  Method,B_Ilum,aidAccept,DST)
+                  Method,B_Ilum,aidAccept,DST,UT_TT,IREF)
             end if
 
       end if
@@ -526,11 +546,10 @@ program main
 end
 
 subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
-      Method,B_Ilum,aidAccept,DST)
+      Method,B_Ilum,aidAccept,DST,UT_TT,IREFR)
 
       USE MoonSun
       USE MSISE
-      USE NOVAS
       USE SOFA
 
       implicit none
@@ -543,19 +562,20 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
        integer, dimension(3) :: Equinox, Jdate
        integer :: MarDay,Gyear
        integer, dimension(12):: DaysInMonth, GdaysInMonth
-       real(kind=8) :: Density,a,mu,ts,rr,pp,rm,qm,DELTA_T
-       real(kind=8) :: B_Ilum, DJD, hour, newYearJD
+       real(kind=8) :: Density,a,mu,ts,rr,pp,rm,qm ,DELTA_T
+       real(kind=8) :: B_Ilum, DJD, hour, newYearJD, MJD
        real(kind=4) :: alt,lat,long,stl,Den,Tem,Pre
-       real(kind=8) :: MoonAngle
-       real(kind=8) ,dimension(4) :: Geo
+       real(kind=8) ,dimension(4) :: Geo, Geo1
        real(kind=8) ,dimension(2) :: atmos, DST
-       real(kind=8) ,dimension(2):: RSTJDout ,RS_Hours, RS_Azim
        real(kind=8) ,dimension(3):: RTSangles
        real(kind=8) :: UJD, Uhour
        character(9) ,dimension(7) :: weekDays
        real(kind=8) ,dimension(0:14,0:3):: MoonPhaseJD
        real(kind=8) ,dimension(0:14) :: newMoonJD
        real(kind=8) ,dimension(9) :: RTimes,RSTJD
+       real(kind=8) ,dimension(0:2,0:2) :: MRTShour,MRTSJD,MRTSang
+       real(kind=8) ,dimension(6) :: moonRTSJD,moonRTShour,moonRTSangles
+       character(len=8), dimension(6) :: moonEvents
        character(3) :: OmonthAb
        character(4) :: YearChar
        character(5) :: HmonthAb
@@ -564,10 +584,11 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
        character(30) :: Location
        character(40) :: filename1
        character(55) :: aidAcceptText
+       character(LEN=8) :: Mtime,Mangle
        character(3),dimension(12) :: AbGmonthName, AbImonthName
        character(5),dimension(12) :: AbHmonthName
        character(18) ,dimension(9) :: STimes
-       character(18) ,dimension(2) :: MTimes
+       character(26), allocatable, dimension(:) :: MTimes
        logical :: isLeap
 
       data weekDays / 'Sunday   ','Monday   ','Tuesday  ', &
@@ -586,8 +607,7 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       DATA DaysInMonth /31,31,31,31,31,31,30,30,30,30,30,29/
       DATA GdaysInMonth /31,28,31,30,31,30,31,31,30,31,30,31/
 
-      IREFR = 1
-      UT_TT = 1
+      Geo1 = Geo
 
       if(CalenType == 1)then
             call IranCalendar(IYear,Gyear,UJD,isleap,Equinox,MarDay,UHour)
@@ -601,7 +621,7 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             newYearJD = TrueJDEquiSolitice(Gyear,0)
             call iau_DAT(Oyear,3,MarDay,0.D0,DELTA_T,J)
       else
-            call JULDAT(IYear,1,1,0.D0,DJD)
+            DJD = CAL2JD (IYear,1,1)
             if(IsLeapYear(Iyear)) GdaysInMonth(2) = 29
             call JD2IrCal(DJD,Oyear,Omonth,Oday,hour)
             call IranCalendar(Oyear,Gyear,UJD,isLeap,Equinox,MarDay,Uhour)
@@ -611,7 +631,7 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             call iau_DAT(Iyear,1,1,0.D0,DELTA_T,J)
       end if
 
-      Uhour= dmod(newYearJD+0.5D0,1.D0)*24.D0+Geo(4)-(DELTA_T+32.184D0)/3600.D0
+      Uhour= dmod(newYearJD+0.5D0,1.D0)*24.D0+Geo(4) -(DELTA_T+32.184D0)/3600.D0
 
       weekDaynum = JD2WeekDayNum(DJD)
 
@@ -664,6 +684,10 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       write(*,7)aidAcceptText,Iyear
       write(10,7)aidAcceptText,Iyear
  7    format(1X,A,/200('-')/100X,I4)
+      MJD = DJD -Geo(4)/24.D0
+      Call Moon_RTS(Jdate ,MJD-1.D0, Geo, Atmos ,UT_TT,IREFR,MRTShour(0,:),MRTSJD(0,:),MRTSang(0,:))
+      call Moon_RTS(Jdate ,MJD, Geo, Atmos ,UT_TT,IREFR,MRTShour(1,:),MRTSJD(1,:),MRTSang(1,:))
+
 
       do I = 1, 12
 
@@ -710,26 +734,23 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             WRITE(*,15)Iyear,Oyear,Hy,monthName,Ocal
             WRITE(10,15)Iyear,Oyear,Hy,monthName,Ocal
  15         FORMAT(5X,I4,6X,I4,5X,I4,5X,'---------Twilight---------',8X,'Sun',18X,'Noon',16X,'Sun ',&
-                  12X,'---------Twilight---------',10X,'Moon',16X,'Moon',12X,'Moon'/2X,A,1X,A,2X,'Hijri',&
+                  12X,'---------Twilight---------',6X,'Moon',14X,'Moon',22X,'Moon',22X,'Moon'/2X,A,1X,A,2X,'Hijri',&
                   2X,'Astronomical Nautical  Civic',5X,'Rise-Azimuth ',7X,'Time-Altitude',9X,&
-                  'Set-Azimuth',6X,'Civic  Nautical Astronomical',5X,'Rise-Azimuth',9X,'Set_Azimuth'&
-                   ,7X,'Phases')
+                  'Set-Azimuth',6X,'Civic  Nautical Astronomical',80X,'Phases')
 
              MoonStat = ''
 
             do J=1,Days
 
-                  call AstroSolarTimes(DJD,Jdate,Geo,atmos,UT_TT,IREFR,RTimes,RSTJD,RTSangles)
-                  RTimes = RTimes - (DELTA_T+32.184D0)/3600.D0
-                  call Moon_Day_Rise_Set(Jdate,DJD,Geo,ATmos,UT_TT,MoonAngle,RSTJDout,RS_Hours,RS_Azim,IREFR)
-                  RS_Hours = RS_Hours - (DELTA_T+32.184D0)/3600.D0
-
                   if(DJD>= DST(1).and. DJD <= DST(2)) then
-                        RTimes = RTimes + 1.D0
-                        RS_Hours = RS_Hours +1.D0
+                        Geo1(4) = Geo(4) + 1.D0
+                  else
+                        Geo1(4) = Geo(4)
                   end if
 
-                  do n=1,9
+                  call AstroSolarTimes(DJD,Jdate,Geo1,atmos,UT_TT,IREFR,RTimes,RSTJD,RTSangles)
+
+                    do n=1,9
                         call Hour2HMS(RTimes(n),H,M,S)
                         if( n>= 4 .and. n<=6) then
                                     STimes(n) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
@@ -741,16 +762,27 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
 
                   end do
 
-                  do L =1 , 2
-                        call Hour2HMS(RS_Hours(L), H , M , S)
-                        if(RS_Hours(L) == 0.D0 .or. RS_Hours(L) == 99.D0) then
-                              MTimes(L) = "00:00:00- 000.0000"
-                        else
-                              MTimes(L) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
-                        ':'//trim(I2str(S))//  '-'//trim(D2str(RS_Azim(L))))
+                  call Moon_RTS(Jdate ,MJD+1.D0, Geo1, Atmos ,UT_TT,IREFR,MRTShour(2,:),MRTSJD(2,:),MRTSang(2,:))
+                  call MoonRiseTranSet(MJD,MRTSJD,MRTShour,MRTSang,Geo1(4), &
+                              moonEvents,moonRTSJD,moonRTShour,moonRTSangles)
+
+                   N = 0
+
+                  do M = 1, 6
+                        if(moonRTShour(M) /=0.D0 .and. moonRTShour(M) /= 99.D0) then
+                              N = N + 1
                         end if
                   end do
 
+                  allocate(MTimes(N))
+
+                  Mtimes = ''
+
+                  do M = 1,N
+                        Mtime = adjustl(trim(Hour2text(moonRTShour(M))))
+                        Mangle = ','//adjustl(trim(D2str(moonRTSangles(M))))
+                        Mtimes(M) =  adjustl(trim(moonEvents(M))//Mtime//Mangle)
+                 end do
 
                   do L= I-1 , I+1
                         do q = 0,3
@@ -773,15 +805,22 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
                   end do
 
 
-                  write(*,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd,(Stimes),(MTimes),MoonStat
-                  write(10,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd,(Stimes),(MTimes),MoonStat
- 20               format(A,2X,I2,2X,A,','I2,2X,A,',',I2,3(2X,A8),3(2X,A18),3(2X,A8),X,2(2X,A18),X,A)
+                  write(*,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd,Stimes,MoonStat,MTimes
+                  write(10,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd,Stimes,MoonStat,MTimes
+ 20               format(A,2X,I2,2X,A,','I2,2X,A,',',I2,3(2X,A8),3(2X,A18),3(2X,A8),X,A,3(2X,A26))
 
-                  RTimes = 0.D0
-                  RS_Hours = 0.D0
-                  RS_Azim = 0.D0
+                  deallocate(MTimes)
+
+                  MRTSJD(0,:) = MRTSJD(1,:)
+                  MRTShour(0,:) = MRTShour(1,:)
+                  MRTSang(0,:) = MRTSang(1,:)
+                  MRTSJD(1,:) = MRTSJD(2,:)
+                  MRTShour(1,:) = MRTShour(2,:)
+                  MRTSang(1,:) = MRTSang(2,:)
+
                   MoonStat = ''
                   DJD = DJD + 1.D0
+                  MJD = DJD - Geo1(4)/24.D0
                   weekDayNum = weekDayNum + 1
                   if(weekDayNum > 7) weekDayNum = 1
                   Oday = Oday + 1
@@ -817,14 +856,14 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             end do
       end do
       close(10)
+
 end subroutine
 
 subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
-      Method,B_Ilum,aidAccept,DST)
+      Method,B_Ilum,aidAccept,DST,UT_TT,IREFR)
 
       USE MoonSun
       USE MSISE
-      USE NOVAS
       USE SOFA
 
       implicit none
@@ -832,20 +871,21 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
        integer :: Iyear, CalenType,UT_TT,Method, aidAccept
        integer :: weekDayNum, Oyear, Omonth, Oday
        integer :: OdaysinMonth, Days, k,I,J,Hy,Hm,Hd,n
-       integer :: IREFR, H , S, M, airModel, kk, L, q , km
+       integer :: IREFR, H , S, M, airModel, kk, L, q
        integer :: dayofYear,Adjust
        integer, dimension(3) :: Equinox, Jdate
        integer :: MarDay,Gyear
        integer, dimension(12):: DaysInMonth, GdaysInMonth
-       real(kind=8) :: Density,a,mu,ts,rr,pp,rm,qm,DELTA_T
-       real(kind=8) :: B_Ilum, DJD, hour, newYearJD
+       real(kind=8) :: Density,a,mu,ts,rr,pp,rm,qm ,DELTA_T
+       real(kind=8) :: B_Ilum, DJD, hour, newYearJD, MJD
        real(kind=4) :: alt,lat,long,stl,Den,Tem,Pre
-       real(kind=8) :: MoonAngle,Elev
-       real(kind=8) ,dimension(4) :: Geo
+       real(kind=8) :: ilumRatio
+       real(kind=8) ,dimension(4) :: Geo, Geo1
        real(kind=8) ,dimension(2) :: atmos, DST
-       real(kind=8), dimension(2):: RSTJDout ,RS_Hours, RS_Azim
-       real(kind=8),dimension(3) :: RTSJD,ilumRatio,RSHours
+       real(kind=8) ,dimension(0:2,0:2) :: MRTShour,MRTSJD,MRTSang
+       real(kind=8) ,dimension(6) :: moonRTSJD,moonRTShour,moonRTSangles
        real(kind=8) :: UJD, Uhour
+       character(8),dimension(6) :: moonEvents
        character(9),dimension(7) :: weekDays
        real(kind=8), dimension(0:14,0:3):: MoonPhaseJD
        real(kind=8) , dimension(0:14) :: newMoonJD
@@ -857,9 +897,10 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
        character(30) :: Location
        character(40) :: filename1
        character(55) :: aidAcceptText
+       character(LEN=8) :: Mtime,Mangle,Milum
        character(3),dimension(12) :: AbGmonthName, AbImonthName
        character(5),dimension(12) :: AbHmonthName
-       character(26) ,dimension(3) :: MTimes
+       character(34) ,allocatable,dimension(:) :: MTimes
        logical :: isLeap
 
       data weekDays / 'Sunday   ','Monday   ','Tuesday  ', &
@@ -878,13 +919,12 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       DATA DaysInMonth /31,31,31,31,31,31,30,30,30,30,30,29/
       DATA GdaysInMonth /31,28,31,30,31,30,31,31,30,31,30,31/
 
-      IREFR = 1
-      UT_TT = 1
+      Geo1 = Geo
 
       if(CalenType == 1)then
             call IranCalendar(IYear,Gyear,UJD,isleap,Equinox,MarDay,UHour)
             if(isLeap) DaysInMonth(12) = 30
-            DJD = dint(UJD)+0.5D0
+            DJD = IrCal2JD(Iyear,1,1,0.D0) !dint(UJD)+0.5D0
             Oyear = Gyear
             Omonth = 3
             Oday = MarDay
@@ -893,7 +933,7 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             newYearJD = TrueJDEquiSolitice(Gyear,0)
             call iau_DAT(Oyear,3,MarDay,0.D0,DELTA_T,J)
       else
-            call JULDAT(IYear,1,1,0.D0,DJD)
+            DJD = CAL2JD ( IYear,1,1)
             if(IsLeapYear(Iyear)) GdaysInMonth(2) = 29
             call JD2IrCal(DJD,Oyear,Omonth,Oday,hour)
             call IranCalendar(Oyear,Gyear,UJD,isLeap,Equinox,MarDay,Uhour)
@@ -903,7 +943,7 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             call iau_DAT(Iyear,1,1,0.D0,DELTA_T,J)
       end if
 
-      Uhour= dmod(newYearJD+0.5D0,1.D0)*24.D0+Geo(4)-(DELTA_T+32.184D0)/3600.D0
+      Uhour= dmod(newYearJD+0.5D0,1.D0)*24.D0+Geo(4) -(DELTA_T+32.184D0)/3600.D0
 
       weekDaynum = JD2WeekDayNum(DJD)
 
@@ -956,9 +996,11 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       write(*,7)aidAcceptText,Iyear
       write(10,7)aidAcceptText,Iyear
  7    format(1X,A,/120('-')/52X,I4)
+      MJD = DJD -Geo(4)/24.D0
+    !  Call Moon_RTS(Jdate ,MJD-1.D0, Geo, Atmos ,UT_TT,IREFR,MRTShour(0,:),MRTSJD(0,:),MRTSang(0,:))
+    !  call Moon_RTS(Jdate ,MJD, Geo, Atmos ,UT_TT,IREFR,MRTShour(1,:),MRTSJD(1,:),MRTSang(1,:))
 
       do I = 1, 12
-
             if(CalenType == 1) then
                   Ocal = 'Gregory'
                   monthName = PersianMonthName(I)
@@ -1001,59 +1043,52 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
 
             WRITE(*,15)Iyear,Oyear,Hy,monthName,Ocal
             WRITE(10,15)Iyear,Oyear,Hy,monthName,Ocal
- 15         FORMAT(5X,I4,6X,I4,5X,I4,14X,'Moon',2(22X,'Moon')/&
-                  2X,A,1X,A,2X,'Hijri ',2X,'Rise-Azimuth-Illumination ',2X,&
-                  'Transit-Altitude-Illum',2X,'Set-Azimuth-Illumination')
+ 15         FORMAT(5X,I4,6X,I4,5X,I4,14X,'Moon',2(32X,'Moon')/&
+                  2X,A,1X,A,2X,'Hijri')
 
              MoonStat = ''
 
             do J=1,Days
 
-             call Moon_Day_Rise_Set(Jdate,DJD,Geo,ATmos,UT_TT,MoonAngle,RSTJDout,RS_Hours,RS_Azim,IREFR)
-
-                  RTSJD(1) = RSTJDout(1)
-                  RTSJD(3) = RSTJDout(2)
-                  RSHours(1) = RS_Hours(1)
-                  RSHours(3) = RS_Hours(2)
-
-                  call MoonTransit(Jdate ,DJD, Geo, Atmos ,UT_TT , &
-                  MoonAngle,RTSJD(2) ,RSHours(2), Elev)
-
-
-                  do n = 1 ,3
-                       if( RS_Hours(k)/= 0.D0 .or.  RS_Hours(k)/=99D0)then
-                        RTSJD(n) = RTSJD(n)
-                        call Moon_Illum_Fractio(jDate,Hour,RTSJD(n),UT_TT,ilumRatio(n))
-                       end if
-
-                  end do
-
                   if(DJD>= DST(1).and. DJD <= DST(2)) then
-                        do n = 1, 3
-                           if(RTSJD(n)/= 0.D0 .or. RTSJD(n)/=99D0) then
-                              RSHours(n) =RSHours(n) +1.D0
-                           end if
-                        end do
+                        Geo1(4) = Geo(4) + 1.D0
+                  else
+                        Geo1(4) = Geo(4)
                   end if
 
-                  do km = 1 , 3
-                       if(RSHours(km)/= 0.D0 .and. RSHours(km)/=99.D0)then
-                              RSHours(km)= RSHours(km) - (DELTA_T+32.184D0)/3600.D0
-                              call Hour2HMS(RSHours(1), H , M , S)
-                              if(km == 2) then
-                                    MTimes(km) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
-                        ':'//trim(I2str(S))// '-'//trim(D2str(Elev))//'-'//trim(D2str(ilumRatio(2))))
-                              else
-                                    L = km
-                                    if( L == km) L =L - 1
-                                    MTimes(km) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
-                        ':'//trim(I2str(S))// '-'//trim(D2str(RS_Azim(L)))//'-'//trim(D2str(ilumRatio(km))))
-                              end if
+                  if(I == 1 .and. J == 1) then
+                        Call Moon_RTS(Jdate ,MJD-1.D0, Geo1, Atmos ,UT_TT,IREFR,MRTShour(0,:),MRTSJD(0,:),MRTSang(0,:))
+                        call Moon_RTS(Jdate ,MJD, Geo1, Atmos ,UT_TT,IREFR,MRTShour(1,:),MRTSJD(1,:),MRTSang(1,:))
+                  end if
 
-                        else
-                              MTimes(km) = "00:00:00-0000.0000-00.0000"
-                       end if
+                  call Moon_RTS(Jdate,MJD+1.D0, Geo1, Atmos ,UT_TT, IREFR,MRTShour(2,:),MRTSJD(2,:),MRTSang(2,:))
+                  call MoonRiseTranSet(MJD,MRTSJD,MRTShour,MRTSang,Geo1(4),&
+                              moonEvents,moonRTSJD,moonRTShour,moonRTSangles)
+
+                  N = 0
+
+                  do M = 1, 6
+                        if(moonRTShour(M) /=0.D0 .and. moonRTShour(M) /= 99.D0) then
+                              if(moonRTShour(N)>= 24.D0) then
+                                    moonRTShour(N) = moonRTShour(N) - 24.D0
+                              elseif(moonRTShour(N) <= moonRTShour(N)) then
+                                    moonRTShour(N) = moonRTShour(N) + 24.D0
+                              end if
+                              N = N + 1
+                        end if
                   end do
+
+                  allocate(MTimes(N))
+
+                  Mtimes = ''
+
+                  do M = 1,N
+                        Mtime = adjustl(trim(Hour2text(moonRTShour(M))))
+                        Mangle = ','//adjustl(trim(D2str(moonRTSangles(M))))
+                        call Moon_Illum_Fractio(Jdate,Hour,moonRTSJD(M),UT_TT,ilumRatio)
+                        Milum = ','//adjustl(trim(D2str(ilumRatio)))
+                        Mtimes(M) =  adjustl(trim(moonEvents(M))//Mtime//Mangle//Milum)
+                 end do
 
                   do L= I-1 , I+1
                         do q = 0,3
@@ -1076,22 +1111,23 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
                         end do
                   end do
 
-                  write(*,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd&
-                  ,(MTimes),MoonStat
-                  write(10,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd&
-                  ,(MTimes),MoonStat
- 20               format(A,2X,I2,2X,A,','I2,2X,A,',',I2,3(2X,A26),2X,A)
+                  write(*,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd,MoonStat,MTimes
+                  write(10,20)WeekDays(weekDaynum),J,OmonthAb,Oday,HmonthAb,Hd,MoonStat,MTimes
+ 20               format(A,2X,I2,2X,A,','I2,2X,A,',',I2,2X,A,6(2X,A34))
 
-                  RS_Hours = 0.D0
-                  RS_Azim = 0.D0
-                  RSHours = 0.D0
-                  RSTJDout = 0.D0
-                  RTSJD = 0.D0
-                  ilumRatio = 0.D0
-                  Elev = 0.D0
-                  MTimes = ''
+                  deallocate(MTimes)
+
+                  MRTSJD(0,:) = MRTSJD(1,:)
+                  MRTShour(0,:) = MRTShour(1,:)
+                  MRTSang(0,:) = MRTSang(1,:)
+                  MRTSJD(1,:) = MRTSJD(2,:)
+                  MRTShour(1,:) = MRTShour(2,:)
+                  MRTSang(1,:) = MRTSang(2,:)
+
                   MoonStat = ''
+
                   DJD = DJD + 1.D0
+                  MJD = DJD - Geo1(4)/24.D0
                   weekDayNum = weekDayNum + 1
                   if(weekDayNum > 7) weekDayNum = 1
                   Oday = Oday + 1
