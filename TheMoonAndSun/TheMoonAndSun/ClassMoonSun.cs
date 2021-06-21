@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Globalization;
+using SunMoonUtility;
 
 namespace ClassMoonSun
 {
@@ -17,14 +18,14 @@ namespace ClassMoonSun
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_dayofpyear")]
         public static extern int dayofIyear(ref int Im, ref int Id);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__novas_MOD_juldat")]
-        public static extern void JULDAT(ref int Iy, ref int Im, ref int Id, ref double H, ref double TJD);
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_cal2jd")]
+        public static extern double Cal2JD(ref int Gy, ref int Gm, ref int Gd);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__novas_MOD_rcaldat")]
-        public static extern void RCALDAT(ref double TJD, ref int Iy, ref int Im, ref int Id, ref double H); 
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_jd2cal")]
+        public static extern void JD2Cal(ref double TJD, ref int Iy, ref int Im, ref int Id, ref double Hour);
 
-         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_jd2cal")]
-        public static extern void JD2Cal(ref double DJ1,ref double DJ2,ref int Iy, ref int Im, ref int Id,ref double  FD, ref int J);
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_jd2cal")]       
+        public static extern void iauJD2Cal(ref double DJ1, ref double DJ2, ref int Iy, ref int Im, ref int Id, ref double FD, ref int J);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_utctai")]
         public static extern void UTC2TAI(ref double UTC1, ref double UTC2, ref double TAI1, ref double TAI2, ref int J);
@@ -33,7 +34,7 @@ namespace ClassMoonSun
         public static extern void TAI2TT(ref double TAI1, ref double TAI2, ref double TT1, ref double TT2, ref int J);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__sofa_MOD_iau_dat")]
-        public static extern void iau_DAT(ref int IY, ref int IM, ref int ID, ref double FD, ref double DELTAT, ref int J);
+        public static extern void iau_DAT(ref int IY, ref int IM, ref int ID, ref double FD, ref double DELTA_T, ref int J);
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_jdequisolitice")]
         public static extern double JDEquiSolitice(ref int Iy, ref int k );
@@ -102,13 +103,21 @@ namespace ClassMoonSun
         public static extern void lunar_position(ref double TJD, ref int UT_TT, ref double TJDT,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
-            ref double Elev,ref double Azim, ref double delta,ref int Iref);
-                
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_moon_day_rise_set")]
-        public static extern void Moon_Day_Rise_Set([MarshalAs(UnmanagedType.LPArray, SizeConst = 3)] int[] Jdate , 
-            ref double TJD1,[MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
+            ref double Elev,ref double Azim, ref double alfa, ref double delta,ref int Iref);
+       
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_moon_rts")]
+        public static extern void Moon_RTS([MarshalAs(UnmanagedType.LPArray, SizeConst = 3)] int[] Jdate,
+            ref double TJD, [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
              [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
-             ref int UT_TT ,ref double MoonAngle,[Out] double[] RSTJDout ,[Out] double[] RS_Hours ,[Out] double[] RS_Azim, ref int IREFR);
+             ref int UT_TT, ref int IREFR, [Out] double[] mRTS_Hours, [Out] double[] mRTSJD, [Out] double[] mTRS_Angles);
+
+               
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_moon_rtsevents")]
+        public static extern void Moon_RTSevents([MarshalAs(UnmanagedType.LPArray, SizeConst = 3)] int[] Jdate , 
+            ref double TJD,[MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
+             [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
+             ref int UT_TT, ref int IREFR ,[Out] int[] mEvents, [Out] double[] mRTSJD ,[Out] double[] mRTS_Hours ,[Out] double[] mRTS_Angles);
+       
 
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_moonsemidia")]
         public static extern void MoonSemiDia(ref double TJD, ref double MoonElevation, ref double GeoDia,ref double TopoDia);
@@ -146,14 +155,7 @@ namespace ClassMoonSun
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_hijrimonths")]
         public static extern void hijriMonths(ref int year, ref int month, ref int day,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo, ref int UT_TT, ref int Method,
-            ref double B_Ilum, ref int AidAccept, [Out] double[] NewMoonJD);
-
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_moontransit")]
-        public static extern void moonTransit(
-            [MarshalAs(UnmanagedType.LPArray, SizeConst = 3)] int[] Jdate,ref double TJD,
-           [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
-           [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos, ref int UT_TT,
-            ref double MoonAngle,ref double TranJDout ,ref double Thour,ref double Televation);
+            ref double B_Ilum, ref int AidAccept, [Out] double[] NewMoonJD);        
        
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_yearmoonphases")]
         public static extern void FyearMoonPhases(ref int year, ref int month, ref int day, [Out] double[] moonPhaseJD);
@@ -161,6 +163,14 @@ namespace ClassMoonSun
         [DllImport("StaticMSISE.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__msise_MOD_gtd7tropo")]
         public static extern void MSIStropo(ref int DY, ref float ALT, ref float Glat, ref float Glong,
             ref float STL, ref float Density, ref float Temp, ref float Press);
+
+        public static double Cal2JDH( int Gy, int Gm, int Gd, double hour)
+        {
+            double TJD = Cal2JD(ref Gy, ref Gm, ref Gd); 
+            TJD = TJD  + hour / 24.0;
+            return TJD ;
+        }
+
 
         public static double[] stdAtmosTP(double latitude, int kd = 0 )
         {
@@ -301,7 +311,6 @@ namespace ClassMoonSun
             }
         }
 
-
         public static string hijriMonthName(int monthNumber, int Language = 1)
         {
 
@@ -324,7 +333,6 @@ namespace ClassMoonSun
                     return string.Format(CultureInfo.CurrentCulture, "{0,18}", hijriMonths[monthNumber]);
             }
         }
-
 
         public static string Visibility(int visiStat)
         {
@@ -376,8 +384,123 @@ namespace ClassMoonSun
             }
 
         }
-            
+
+        public static void MoonRiseTranSet(int[] Jdate, double TJD, double[] Geo, Double[] Atmos
+             , int UTTT, int IREFR, double[] moonRTSJD, double[] moonHours, double[] moonAngles, string[] moonEvents)
+        {
+            double[] mRTSJD = new double[6];
+            double[] mRTS_Hours = new double[6];
+            double[] mRTS_Angles = new double[6];
+            int[] mRTS_Events = new int[6];
+
+            NativeMethods.Moon_RTSevents(Jdate, ref TJD, Geo, Atmos, ref UTTT, ref IREFR, mRTS_Events, mRTSJD, mRTS_Hours, mRTS_Angles);
+
+            int n = 0;
+
+            for (int i = 0; i <= 5; i++)
+            {
+                
+                if (mRTS_Hours[i] != 0.0 & mRTS_Hours[i] != 99.0)
+                {                       
+                    moonRTSJD[n] = mRTSJD[i];
+                    string mTime = Utility.hour2Time(mRTS_Hours[i]);
+                    string mAngle = mRTS_Angles[i].ToString("F2", CultureInfo.CurrentCulture);
+                    string RTS = null;
+                    if (mRTS_Events[i] == 0)
+                    {
+                        RTS = "Rise: ";
+                    }
+                    else if (mRTS_Events[i] == 1)
+                    {
+                        RTS = "Transit: ";
+                    }
+                    else if (mRTS_Events[i] == 2)
+                    {
+                        RTS = "Set: ";
+                    }
+                    moonEvents[n] = RTS + mTime + " , " + mAngle;
+                    n = n + 1;
+                }                
+            }
+        }
+
+        public static void moon_RiseTranSet3(double TJD, double timeZone , double [][] RTSJD, double[][] RTShour, double[][] RTSang, 
+            double [] moonRTSJD, string[] moonEvents)
+
+        {         
+
+            for (int i = 0; i <= 2; i++)
+            {
+                if (i > 1)
+                {
+                    double DiffJ = RTSJD[i][1] - RTSJD[i - 1][1];
+                    if (DiffJ <= 0.01)
+                    {
+                        for (int j = 0; j <= 2; j++)
+                        {
+                            RTShour[i][j] = 0.0;
+                            RTSang[i][j] = 0.0;
+                        }
+                    }
+                }
+
+                if (i < 2)
+                {
+                    if (RTShour[i][2] != 99.0 & RTShour[i + 1][2] == 99.0)
+                    {
+                        RTShour[i][2] = 99.0;
+                        RTSang[i][2] = 99.0;
+                    }                   
+                }
+            }
+
+            int n = 0;
+
+            for (int i = 0; i <= 2; i++)
+            { 
+                for (int J = 0; J <= 2; J++)
+                {
+                    if (RTSJD[i][J] >= TJD & RTSJD[i][J] <= TJD + 1.0)
+                    {
+                        if(RTShour[i][J]  != 0.0 & RTShour[i][J] != 99.0)
+                        {
+                            moonRTSJD[n] = RTSJD[i][J ];
+                            RTShour[i][J] = RTShour[i][J] + timeZone;
+                            if (RTShour[i][J] >= 24.0)
+                            {
+                                RTShour[i][J] = RTShour[i][J] - 24.0;
+                            }
+                            else if (RTShour[i][J] < 0.0)
+                            {
+                                RTShour[i][J] = RTShour[i][J] + 24.0;
+                            }                       
+                            string mTime = Utility.hour2Time(RTShour[i][J]);
+                            string mAngle = RTSang[i][J].ToString("F2", CultureInfo.CurrentCulture); 
+                            string RTS = null;
+                            if (J == 0)
+                            {
+                                RTS = "Rise: ";
+                            }
+                            else if (J == 1)
+                            {
+                                RTS = "Transit: ";
+                            }
+                            else if (J == 2)
+                            {
+                                RTS = "Set: ";
+                            }
+                            moonEvents[n] = RTS + mTime + " , " + mAngle;
+                            n = n + 1;
+                        }                        
+
+                    }
+                    
+                }                  
+            }
+        }
+
+    }            
           
     }
    
-}
+
