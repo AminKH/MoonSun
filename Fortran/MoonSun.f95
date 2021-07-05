@@ -3658,26 +3658,27 @@ end subroutine
         integer , dimension(3) :: Jdate
 
         Horizon = -0.2665694D0
-        call SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Horizon,UT_TT,IREFR,RTSJD,RTShour)
-
-        if(RTShour(0) ==0.D0 .or.RTShour(2) == 0.D0) then
-            Times = 0.D0
-            return
-        elseif(RTShour(0) == 99.D0 .or. RTShour(2)==99.D0) then
-            Times= 99.D0
-            return
-        end if
-
-        RiseSetZenit = 90.D0 - Horizon
-
         Delta = 1.D-4  ! precision of angle
-
         RSTJD = 0.D0
+
+        call SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Horizon,UT_TT,IREFR,RTSJD,RTShour)
 
         RSTJD(2) = RTSJD(1)
         Times(5) = RTShour(1) + Geo(4)
         call Solar_Position(RTSJD(1),Geo,Atmos,UT_TT,RTS_Angles(2),Zenit,Azim,&
            GeoAlfa,GeoDelta,IREFR)
+
+        if(RTShour(0) ==0.D0 .or.RTShour(2) == 0.D0) then
+            Times = 0.D0
+            Times(5) = RTShour(1) + Geo(4)
+            return
+        elseif(RTShour(0) == 99.D0 .or. RTShour(2)==99.D0) then
+            Times = 99.D0
+            Times(5) = RTShour(1) + Geo(4)
+            return
+        end if
+
+        RiseSetZenit = 90.D0 - Horizon
 
         call Rise_Set(Geo,Atmos,RTSJD(0),UT_TT,Delta,RiseSetZenit,Times(4),&
         RSTJD(1),RTS_Angles(1),IREFR)
@@ -3717,6 +3718,7 @@ end subroutine
 
     end subroutine
 
+!************************************************************************************
 
     subroutine SolarTimes(TJD,Jdate,Geo,Atmos,UT_TT,IREFR,Times,RSTJD,RTS_Angles)
 !
@@ -3756,31 +3758,29 @@ end subroutine
         integer , dimension(3) :: Jdate
 
         Horizon = -0.2665694D0
-        call SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Horizon,UT_TT,IREFR,RTSJD,RTShour)
-
         RSTJD = 0.D0
         RTS_Angles = 0.D0
-
-        if(RTShour(0) == 99.D0 .or.RTShour(2) == 99.D0)then
-            Times = 99.D0
-            return
-        end if
-
-        if(RTShour(0) == 0.D0 .or.RTShour(2) == 0.D0)then
-            Times = 0.D0
-            return
-        end if
-
-        RiseSetZenit = 90.D0 - Horizon
-
         Delta = 1.D-4  ! precision of angle
 
-        RSTJD = 0.D0
+        call SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Horizon,UT_TT,IREFR,RTSJD,RTShour)
 
         Times(2) = RTShour(1) + Geo(4)
         RSTJD(2) = RTSJD(1)
         call Solar_Position(RSTJD(2),Geo,Atmos,UT_TT,RTS_Angles(2),Zenit,Azim,Alfa,GDelta,IREFR)
 
+        if(RTShour(0) == 99.D0 .or.RTShour(2) == 99.D0)then
+            Times(1) = 99.D0
+            Times(3) = 99.D0
+            return
+        end if
+
+        if(RTShour(0) == 0.D0 .or.RTShour(2) == 0.D0)then
+            Times(1) = 0.D0
+            Times(3) = 0.D0
+            return
+        end if
+
+        RiseSetZenit = 90.D0 - Horizon
 
         call Rise_Set(Geo,Atmos,RTSJD(0),UT_TT,Delta,RiseSetZenit,Times(1),&
         RSTJD(1),RTS_Angles(1),IREFR)
@@ -3790,8 +3790,8 @@ end subroutine
         RSTJD(3),RTS_Angles(3),IREFR)
         Times(3) = Times(3) + Geo(4)
 
-         do J = 1, 3
-            if(Times(J) /= 0.D0 .and. Times(J) /= 99.D0) then
+        do J = 1,3
+            if(Times(J) /= 0.D0 .and. Times(J) == 99.D0) then
                 if(Times(J) > 24.D0) then
                     Times(J) = Times(J) - 24.D0
                 elseif(Times(J) < 0.D0) then
@@ -3801,7 +3801,6 @@ end subroutine
         end do
 
     end subroutine
-
 
 !*********************************************************
 

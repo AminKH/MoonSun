@@ -751,14 +751,22 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
                   call AstroSolarTimes(DJD,Jdate,Geo1,atmos,UT_TT,IREFR,RTimes,RSTJD,RTSangles)
 
                     do n=1,9
-                        call Hour2HMS(RTimes(n),H,M,S)
-                        if( n>= 4 .and. n<=6) then
+                        if(RTimes(n) /= 99.D0 .and. RTimes(n) /= 0.D0) then
+                              call Hour2HMS(RTimes(n),H,M,S)
+                              if( n>= 4 .and. n<=6) then
                                     STimes(n) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
-                        ':'//trim(I2str(S))//  '-'//trim(D2str(RTSAngles(n-3))))
+                                    ':'//trim(I2str(S))//  ','//trim(D2str(RTSAngles(n-3))))
                               else
                                     STimes(n) = adjustl(trim(I2str(H))//':'//trim(I2str(M))//&
-                        ':'//trim(I2str(S)))
+                                    ':'//trim(I2str(S)))
                              end if
+                        else
+                             if(RTimes(n) == 99.D0) then
+                                  STimes(n) = "Sun up"
+                              else if (RTimes(n) == 0.D0) then
+                                  STimes(n) = "Sun down"
+                             end if
+                        end if
 
                   end do
 
