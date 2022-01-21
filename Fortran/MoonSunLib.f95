@@ -2928,22 +2928,17 @@ end subroutine
 
 
       integer ::  J, I, N, K
-
+      integer(kind=8), dimension(4):: moonEvents
       Real(kind=8) :: TJD0, TimeZone, Thour
       real(kind=8), dimension(0:2,0:2) :: RTSJD,RTShour,RTSang
       real(kind=8), dimension(4):: moonRTSJD,moonRTShour,moonRTSangles
-      character(LEN=8) :: Mtime,Events
-      character(LEN=10) ::Mangle
-      character(28), dimension(4):: moonEvents
+    !  character(8), dimension(4):: moonEvents
       logical :: isIN
 
         moonRTSJD = 0.D0
         moonRTShour = 0.D0
         moonRTSangles =  0.D0
-        MTime =  '--------'
-        Mangle = '----------'
-        Events ='--------'
-        moonEvents = '--------,--------,----------'
+        moonEvents = 0
 
         N = 1
         do I = 0, 2
@@ -2962,16 +2957,8 @@ end subroutine
                                 moonRTSJD(N) = RTSJD(I,J)
                                 moonRTShour(N) = RTShour(I,J)
                                 moonRTSangles(N) =  RTSang(I,J)
-                                Mtime = Hour2text(moonRTShour(N))
-                                Mangle = ','//adjustl(trim(D2str(moonRTSangles(N))))
-                                if(J == 0 ) then
-                                        Events = 'Rise:'
-                                elseif(J == 1) then
-                                        Events = 'Transit:'
-                                elseif(J == 2) then
-                                        Events = 'Set:'
-                                end if
-                                moonEvents(N) = Events//Mtime//Mangle
+                                moonEvents(N) = J
+
                                 N = N + 1
                             end if
                         end if
@@ -3011,7 +2998,7 @@ end subroutine
 
       integer, dimension(3) :: Jdate
       integer :: IREFR , UT_TT , J, I, K, N
-      integer, dimension(4):: moonEvents
+      integer(kind=8), dimension(4):: moonEvents
       real(kind=8), dimension(0:2):: TJDC
       real(kind=8) :: A1, A2, T1, T2, Thour
       Real(kind=8) :: TJD , TJD0
@@ -3039,7 +3026,7 @@ end subroutine
         RTSJD3 = 0.D0
         RTSA3 = 0.D0
         moonEvents = 0
-
+    !    moonEvents = ''
         N = 1
         do I = 0, 2
             TJDC(I) = TJD0 + real(I,kind=8) -1.D0
@@ -3060,6 +3047,7 @@ end subroutine
                                 moonRTShour(N) = RTSH3(I,J)
                                 moonRTSangles(N) =  RTSA3(I,J)
                                 moonEvents(N) = J
+
                                 N = N + 1
                             end if
                         end if
@@ -3540,9 +3528,9 @@ end subroutine
 !     returns array of Julian day of first day of Hijri months in one year
 
             integer :: Iyear, Imonth,UT_TT, Method, AidAccept
-            integer :: I , Year, Month, Iday, Day
+            integer :: I , Year, Month, Iday, Day, Hy, Hm
             integer :: IREF
-            integer , dimension(14,2):: newMoonDate
+            integer(kind=8) , dimension(14,2):: newMoonDate
             real(kind=8) :: B_Ilum,astroNewMoonJD,JD
             real(kind=8), dimension(2) :: Atmos
             real(kind=8) , dimension(4) :: Geo
@@ -3556,7 +3544,9 @@ end subroutine
     10          JD = CAL2JD(year,month,day)
                 call Moon_Phases(Year,Month,day, 0, astroNewMoonJD)
                 call HijrifirstDay(astroNewMoonJD,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF, &
-                    newMoonJD(I),newMoonDate(I,1),newMoonDate(I,2))
+                    newMoonJD(I),Hy,Hm)
+                    newMoonDate(I,1) = int(Hy,kind=8)
+                    newMoonDate(I,2) = int(Hm,kind=8)
                 if(JD-astroNewMoonJD < 0.D0) then
                     Day = Day + 7
                     goto 10

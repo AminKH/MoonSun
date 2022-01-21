@@ -1,5 +1,4 @@
-gfortran.exe -Wall -DBUILD_DLL -O2  -ffree-line-length-none -Wall -c MoonSun.f95 -o MoonSun.o
-gfortran.exe -Wall -DBUILD_DLL -O2  -ffree-line-length-none -Wall -c SOFA.f95 -o SOFA.o
-gfortran.exe -Wall -DBUILD_DLL -O2  -ffree-line-length-none -Wall -c SOFAnutate.FOR -o SOFAnutate.o
-gfortran.exe -Wall -DBUILD_DLL -O2  -ffree-line-length-none -Wall -c NOVAS.f95 -o NOVAS.o
-gfortran -shared -static -Wl,--output-def=StaticMoonSunC.def -Wl,--out-implib=StaticMoonSunC.a -Wl,--dll MoonSun.o SOFA.o SOFAnutate.o NOVAS.o -o StaticMoonSunC.dll -s
+gfortran.exe -Wall -DBUILD_DLL -O2  -fexpensive-optimizations -ffree-form -Wall -fcheck=bounds -static -c SOFAnutate.f95 -o SOFAnutate.o
+gfortran.exe -Wall -DBUILD_DLL -O2  -fexpensive-optimizations -ffree-form -Wall -fcheck=bounds -static -c SOFA.f95 -o SOFA.o
+gfortran.exe -Wall -DBUILD_DLL -O2  -fexpensive-optimizations -ffree-form -Wall -fcheck=bounds -static -c MoonSunLib.f95 -o MoonSunLib.o
+gfortran.exe -shared -Wl,--output-def=libMoonSunDLL.def -Wl,--out-implib=libMoonSunDLL.a -Wl,--dll SOFAnutate.o SOFA.o MoonSunLib.o -static -o StaticMoonSunC32.dll -s -O3 -s 
