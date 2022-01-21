@@ -30,7 +30,7 @@ namespace TheMoonAndSun
 
         public MainWindow()
         {
-            InitializeComponent();
+           InitializeComponent();
             DateTime thisTime = DateTime.Now;
             year.Text = Convert.ToString(thisTime.Year, CultureInfo.CurrentCulture);
             month.Text = Convert.ToString(thisTime.Month, CultureInfo.CurrentCulture);
@@ -40,12 +40,12 @@ namespace TheMoonAndSun
             localSec.Text = Convert.ToString(thisTime.Second, CultureInfo.CurrentCulture);
 
             int[] iranDate = Greg2Jalali();
-            irYear.Text = Convert.ToString(iranDate[0], CultureInfo.CurrentCulture);
+            irYear.Text =  Convert.ToString(iranDate[0], CultureInfo.CurrentCulture);
             irMonth.Text = Convert.ToString(iranDate[1], CultureInfo.CurrentCulture);
-            irDay.Text = Convert.ToString(iranDate[2], CultureInfo.CurrentCulture);
+            irDay.Text =   Convert.ToString(iranDate[2], CultureInfo.CurrentCulture);
             // UTC.Text = "UTC \r\n" +
             //     thisTime.ToUniversalTime().ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture);
-
+    
             try
             {
                 string[] geoLocation = System.IO.File.ReadAllLines("location.dat");
@@ -54,7 +54,7 @@ namespace TheMoonAndSun
                 Latitude.Text = geoLocation[2];
                 Elevation.Text = geoLocation[3];
                 timeZone.Text = geoLocation[4];
-
+   
                 if (geoLocation[5] == "0")
                 {
                     gregCalendar.IsChecked = true;
@@ -135,8 +135,8 @@ namespace TheMoonAndSun
             {
                 MessageBox.Show(ex.Message);
             }
-
-
+     
+        
             //   calculateItmes();        
         }
 
@@ -218,7 +218,6 @@ namespace TheMoonAndSun
             double Azim = 0.0;
             double TopoAlfa = 0.0;
             double TopoDelta = 0.0;
-
             double UJD = NJD - Geo[3] / 24.0;
 
             NativeMethods.Solar_Position(ref UJD, Geo, Atmos, ref UT_TT, ref SunElev, ref Zenit, ref Azim, ref TopoAlfa, ref TopoDelta, ref Iref);
@@ -230,7 +229,7 @@ namespace TheMoonAndSun
             }
 
             string sunLocation = "";
-            if (SunElev < -0.2666)
+            if (SunElev < -0.2665694)
             {
                 sunLocation = String.Format(CultureInfo.CurrentCulture, "Sun is Below Horizon ({0:00.0000})", SunElev);
             }
@@ -239,7 +238,7 @@ namespace TheMoonAndSun
                 sunLocation = String.Format(CultureInfo.CurrentCulture, " Sun Altitude: {0:00.0000} \t Sun Azimuth: {1:000.000}", SunElev, Azim);
             }
 
-            double Tcen = ((UJD - 2451545.0)) / 36525.0;
+            double Tcen = ((NJD - 2451545.0)) / 36525.0;
             double R = 0.0;
 
             NativeMethods.Sun_Earth_Vector(ref Tcen, ref R);
@@ -247,13 +246,13 @@ namespace TheMoonAndSun
 
             double Earth_Sun_Vector = AU * R;
 
-            double[] moonRTSJD = new double[6];
-            double[] moonHours = new double[6];
-            double[] moonAngles = new double[6];
-            string[] moonEvents = new string[6];
+            double[] moonRTSJD = new double[4];
+            double[] moonHours = new double[4];
+            double[] moonAngles = new double[4];
+            string[] moonEvents = new string[4];
+            double DJD = NJD - NJD % 1.0 - 0.5;
 
-            NativeMethods.MoonRiseTranSet(jDate, TJD, Geo, Atmos, UT_TT, Iref, moonRTSJD, moonHours,moonAngles, moonEvents);
-
+            NativeMethods.Moon_RiseTranSet(jDate, DJD, Geo, Atmos, UT_TT, Iref, moonEvents, moonRTSJD, moonHours, moonAngles);
             double delta = 0.0;
             double alfa = 0.0;
             double TTJDT = 0.0;
@@ -269,7 +268,7 @@ namespace TheMoonAndSun
 
             string moonLocation = "";
 
-            if (MoonElev < -TopoDia)
+            if (MoonElev < TopoDia)
             {
                 moonLocation = String.Format(CultureInfo.CurrentCulture, "Moon is Below Horizon ({0:00.000})", MoonElev);
             }
@@ -314,110 +313,79 @@ namespace TheMoonAndSun
                 B_Ilum = 0.005;
             }
 
-            int aidAccepted = 0;
-            int adjust = 0;
+            int aidAccepted = 0;            
 
             if ((bool)aidAccept.IsChecked)
             {
                 aidAccepted = 1;
             }
 
-            int ye = jDate[0];
-            int newMoonMon = jDate[1] - 2;
-            double[] NPhMoonJD = new double[5];
-            double[] FPhMoonJD = new double[5];
-            double[] newMoonJD = new double[5];
-
-            for (int i = 0; i <= 4; i++)
+            double[][] MoonPhaseJD = new double[14][];
+            for(int i = 0;i <= 13; i++)
             {
-                if (newMoonMon > 12)
-                {
-                    newMoonMon = 1;
-                    ye = ye + 1;
-                }
-                else if (newMoonMon <= 0)
-                {
-                    newMoonMon = 12 + newMoonMon;
-                    ye = ye - 1;
-                }
-                int j = 0;
-                NativeMethods.Moon_Phases(ref ye, ref newMoonMon, ref jDate[2], ref j, ref NPhMoonJD[i]);
-                j = 2;
-                NativeMethods.Moon_Phases(ref ye, ref newMoonMon, ref jDate[2], ref j, ref FPhMoonJD[i]);
-
-                NativeMethods.HijriAdjust(ref NPhMoonJD[i], Geo, ref UT_TT, ref Method, ref B_Ilum, ref aidAccepted,
-                 ref newMoonJD[i], ref adjust);
-
-                newMoonMon = newMoonMon + 1;
+                MoonPhaseJD[i] = new double[4];               
             }
 
+            NativeMethods.YearMoonPhases(jDate[0], 1, 15, MoonPhaseJD);
+
+           
             double AnewMoonJD = 0.0;
             double BnewMoonJD = 0.0;
             double AfullMoonJD = 0.0;
             double BfullMoonJD = 0.0;
 
-            for (int i = 0; i <= 4; i++)
+            for (int i = 0; i <= 13; i++)
             {
-                if (NJD >= newMoonJD[i])
+                if (NJD <= MoonPhaseJD[i][0])
                 {
-                    AnewMoonJD = newMoonJD[i];
+                    AnewMoonJD = MoonPhaseJD[i][0];
+                    break;
                 }
                 else
                 {
-                    BnewMoonJD = newMoonJD[i];
-                    break;
+                    BnewMoonJD = MoonPhaseJD[i][0];                    
                 }
             }
 
 
-            for (int i = 0; i <= 4; i++)
+            for (int i = 0; i <= 13; i++)
             {
-                if (NJD >= FPhMoonJD[i])
+                if (NJD <= MoonPhaseJD[i][2])
                 {
-                    AfullMoonJD = FPhMoonJD[i];
+                    AfullMoonJD = MoonPhaseJD[i][2];
+                    break;
                 }
                 else
                 {
-                    BfullMoonJD = FPhMoonJD[i];
-                    break;
+                    BfullMoonJD = MoonPhaseJD[i][2];                  
                 }
             }
 
-            int daysinceNewMoon = Convert.ToInt32(NJD - AnewMoonJD);
-            int daystoNextnewMoon = Convert.ToInt32(BnewMoonJD - NJD);
+            int daysinceNewMoon = Convert.ToInt32(NJD - BnewMoonJD);
+            int daystoNextnewMoon = Convert.ToInt32(AnewMoonJD - NJD);
 
-            int daysSinceFullMoon = Convert.ToInt32(NJD - AfullMoonJD);
-            int daystoNextFullMoon = Convert.ToInt32(BfullMoonJD - NJD);
+            int daysSinceFullMoon = Convert.ToInt32(NJD - BfullMoonJD);
+            int daystoNextFullMoon = Convert.ToInt32(AfullMoonJD - NJD);
 
-            double JD = 0.0;
-            JD = NativeMethods.Cal2JD(ref jDate[0], ref jDate[1], ref jDate[2]);
+            double JD = NativeMethods.Cal2JD(ref jDate[0], ref jDate[1], ref jDate[2]);
 
-            double newHijriJD = 0.0;
-
-            for (int l = 0; l <= 4; l++)
-            {
-                if (JD < newMoonJD[l])
-                {
-                    newHijriJD = newMoonJD[l - 1];
-                    break;
-                }
-            }
-
-            double JDH = newHijriJD + 10.0;
+            
             int Hy = 1;
             int Hm = 1;
             int Hd = 1;
-            NativeMethods.JD2Hijri(ref JDH, ref Hy, ref Hm, ref Hd);
+            double NMJD = 0.0;
+            double Hour = 0.0;
 
-            Hd = Convert.ToInt32(JD - newHijriJD) + 1;
+            NativeMethods.JD2TradHijri(ref JD, Geo, Atmos, ref UT_TT, ref Method, ref B_Ilum,
+                ref aidAccepted, ref Iref, ref NMJD, ref Hy, ref Hm, ref Hd, ref Hour); 
 
-            string hijridate = Hd.ToString("D2", CultureInfo.CurrentCulture) + " " + NativeMethods.hijriMonthName(Hm - 1, 1) + " " + Hy.ToString("D4", CultureInfo.CurrentCulture);
+            string hijridate = Hd.ToString("D2", CultureInfo.CurrentCulture) + " " + NativeMethods.hijriMonthName(Hm , 1) + " " + Hy.ToString("D4", CultureInfo.CurrentCulture);
 
             result.Text = " Location : " + geoName + "\t Longitude: " + Geo[0].ToString("F2", CultureInfo.CurrentCulture)
                  + "\t Latitude: " + Geo[1].ToString("F2", CultureInfo.CurrentCulture) + "\t Elevation: " + Geo[2].ToString("F2", CultureInfo.CurrentCulture) + "\r\n";
             result.AppendText(" Date is: " + NativeMethods.JUL2WeekDay(NJD, 2) + " " + thisDate.ToString("dd / MM / yyyy HH:mm:ss", CultureInfo.CurrentCulture)
              + "\t Iranian Calendar: " + Jd.ToString("D2", CultureInfo.CurrentCulture) + " " + NativeMethods.pesianMonthName(Jm - 1, 1) + " " + Jy.ToString("D4", CultureInfo.CurrentCulture) + "\r\n");
-            result.AppendText(" Hijri Lunar Calendar: " + hijridate + "\t UT Julian Day: " + UJD.ToString("F4", CultureInfo.CurrentCulture) + "\r\n");
+            result.AppendText(" Hijri Lunar Calendar: " + hijridate + "\t UT Julian Day: " + NJD.ToString("F4", CultureInfo.CurrentCulture) + "\r\n");
             result.AppendText(" Day of Gregory Year: " + (thisDate.DayOfYear).ToString("D3", CultureInfo.CurrentCulture) + " \t\t " + IrDayofYear + "\r\n");
             
             result.AppendText(atmModel + " Atmospheric model properies for refraction at this Location: \r\n");
@@ -453,7 +421,13 @@ namespace TheMoonAndSun
             result.AppendText(" Days since last new Moon: " + daysinceNewMoon.ToString("D2", CultureInfo.CurrentCulture) 
                 + "\t Days to next new Moon: " + daystoNextnewMoon.ToString("D2", CultureInfo.CurrentCulture) + "\r\n");
             result.AppendText(" Days since last Full Moon: " + daysSinceFullMoon.ToString("D2", CultureInfo.CurrentCulture) 
-                + "\t Days to next Full Moon: " + daystoNextFullMoon.ToString("D2", CultureInfo.CurrentCulture) + "\r\n");          
+                + "\t Days to next Full Moon: " + daystoNextFullMoon.ToString("D2", CultureInfo.CurrentCulture) + "\r\n");
+
+            if ((bool)DST.IsChecked)
+            {
+                double[] dstJD = DSTJD();
+                result.AppendText(dstJD[0].ToString(CultureInfo.CurrentCulture)+ " "+ dstJD[1].ToString(CultureInfo.CurrentCulture));               
+            }
         }
 
 
@@ -945,17 +919,21 @@ namespace TheMoonAndSun
             double GeoNDST = Geo[3];
             double GeoDST = Geo[3] + 1.0;
 
-            int newMoonMon = 1;
-            if ((bool)persCalendar.IsChecked) { newMoonMon = 3; }
+            int newMon = 1;
+            int day = 15;
+            if ((bool)persCalendar.IsChecked)
+            { 
+                newMon = 3;
+                day = 21;
+            }
 
-            double[][] moonPhaseJD = new double[15][];
-            for (int i = 0; i <= 14; i++)
+            double[][] moonPhaseJD = new double[14][];
+            for (int i = 0; i <= 13; i++)
             {
                 moonPhaseJD[i] = new double[4];
-            }
-            int day = 1;
+            }            
 
-            NativeMethods.YearMoonPhases(ye, newMoonMon, day, moonPhaseJD);
+            NativeMethods.YearMoonPhases(ye, newMon, day, moonPhaseJD);
 
             double JDM = 0.0;
             int Iyear = 1;
@@ -976,7 +954,7 @@ namespace TheMoonAndSun
             w2.moonPhaseResult.AppendText("\t\t New Moon \t First Quarter \t Full Moon \t  Last Quarter \r\n");
 
             string moonPhase = null;
-            for (int i = 0; i <= 14; i++)
+            for (int i = 0; i <= 13; i++)
             {
                 for (int j = 0; j <= 3; j++)
                 {
@@ -1017,7 +995,7 @@ namespace TheMoonAndSun
                 w2.moonPhaseResult.AppendText("Local Time \t " + time[0] + " \t " + time[1] + " \t " + time[2] + " \t " + time[3] + "\r\n");
                 w2.moonPhaseResult.AppendText("\r\n");
 
-                newMoonMon = newMoonMon + 1;
+                newMon = newMon + 1;
             }
 
         }
@@ -1040,25 +1018,28 @@ namespace TheMoonAndSun
                 ye = ye - 1;
             }
 
-            int Method = 3;
-            string method = null;
+            double[] Atmos = getAtm(Geo);
+
+            int Method = 3;            
 
             if ((bool)yallop.IsChecked)
             {
-                Method = 1;
-                method = "Yallop Criteria = ";
+                Method = 1;             
             }
             else if ((bool)odeh.IsChecked)
             {
-                Method = 2;
-                method = "Odeh Criteria = ";
+                Method = 2;               
             }
             else if ((bool)yallopOdeh.IsChecked)
             {
-                Method = 3;
-                method = "Yallop or Odeh Criteria = ";
+                Method = 3;              
             }
 
+            int Iref = 1;
+            if ((bool)noAirSelect.IsChecked)
+            {
+                Iref = 0;
+            }
 
             double B_Ilum = 0.0035;
 
@@ -1087,84 +1068,47 @@ namespace TheMoonAndSun
                 aidString = "New Moon sighting only with naked eye.";
             }
 
-            int UT_TT = 1;
+            int UT_TT = 0;
             double GeoNDST = Geo[3];
             double GeoDST = Geo[3] + 1.0;
-
-            int day = 1;
-            int newMoonMon = 1;
-            if ((bool)persCalendar.IsChecked) { newMoonMon = 3; }
-
-            bool Status = false;
-            int visiStat = 0;
-            double[] criteria = new double[12];
-            double HJD = 0.0;
-            int Iyear = 1;
-            int Imonth = 1;
-            int Iday = 1;
-
-            string hijriDate = null;
-
+                                                                      
+            
             w3.hijriMonths.AppendText("\t\t\t Hijri Months For Year " + yearText + "\r\n");
             w3.hijriMonths.AppendText("=================================================================\r\n");
             w3.hijriMonths.AppendText("Location: " + geoName + ", Longitude: " + Geo[0].ToString("F2", CultureInfo.CurrentCulture)
                  + " \t Latitude: " + Geo[1].ToString("F2", CultureInfo.CurrentCulture) + "\t Elevation: " + Geo[2].ToString("F2", CultureInfo.CurrentCulture)
                  + ", Time Zone: " + Geo[3].ToString("F2", CultureInfo.CurrentCulture) + "\r\n");
             w3.hijriMonths.AppendText("\r\n");
-            w3.hijriMonths.AppendText(airConditin + ", " + aidString + "\r\n");
-            w3.hijriMonths.AppendText("\r\n");
-            w3.hijriMonths.AppendText("DAZ = Sun Azimuth - Moon Azimth in Degrees. \r\n");
-            w3.hijriMonths.AppendText("ARCV = Moon Elevation - Sun Elevation in Degrees. \r\n");
-            w3.hijriMonths.AppendText("Cos(ARCL) = Cos(ARCV)*Cos(DAZ) \r\n");
-            w3.hijriMonths.AppendText("TopoDia = Topocenteric semi diameter of moon \r\n");
-            w3.hijriMonths.AppendText("W_p = width of moon crescent in minutes of arc \r\n");
-            w3.hijriMonths.AppendText("No atmospheric refraction for sun set. Moon location at 4/9 of lag, no refraction effect.\r\n");
+            w3.hijriMonths.AppendText(airConditin + ", " + aidString + "\r\n");         
             w3.hijriMonths.AppendText("=================================================================\r\n");
             w3.hijriMonths.AppendText("\r\n");
 
-            double MoonJD = 0.0;
-            int m = 0;
+            double[] MoonJD = new double[14];
+            long[] newMoonDate = new long[28];
+         
+            int day = 15;
+            int newMoonMon = 1;
+            if ((bool)persCalendar.IsChecked)
+            {
+                newMoonMon = 3;
+                day = 21;
+            }
+
+            double hour = 0.0;
+
+            NativeMethods.FhijriMonths(ref ye,ref newMoonMon,ref day, Geo, Atmos,ref UT_TT,ref Method,ref B_Ilum,ref  aidAccepted, 
+                ref Iref, MoonJD, newMoonDate);
+
+            int Iday = 1;
+            int Imonth = 1;
+            int Iyear = 1; 
 
             for (int i = 0; i <= 13; i++)
-            {
-                if (newMoonMon > 12)
-                {
-                    newMoonMon = 1;
-                    ye = ye + 1;
-                }
-
-                NativeMethods.Moon_Phases(ref ye, ref newMoonMon, ref day, ref m, ref MoonJD);
-
-                HJD = MoonJD - MoonJD % 1.0 - 0.5;
-                if ((bool)DST.IsChecked)
-                {
-                    double[] dstJD = DSTJD();
-                    if (HJD >= dstJD[0] | HJD <= dstJD[1])
-                    {
-                        Geo[3] = GeoDST;
-                    }
-                    else
-                    {
-                        Geo[3] = GeoNDST;
-                    }
-                }
-                for (int j = 0; j <= 3; j++)
-                {
-                    NativeMethods.MoonVisibility(ref MoonJD, ref HJD, ref UT_TT, Geo, ref Method, ref B_Ilum,
-                    ref aidAccepted, ref Status, ref visiStat, criteria);
-                    HJD += 1.0;
-                    if (Status) break;
-                }
-
-                double HJD7 = HJD + 7.0;
-                double hour = 0.0;
-                Iyear = 1;
-                Imonth = 1;
-                Iday = 1;
-
-                NativeMethods.JD2Hijri(ref HJD7, ref Iyear, ref Imonth, ref Iday);
-                hijriDate = String.Format(CultureInfo.CurrentCulture, "First of " +
-                    NativeMethods.hijriMonthName(Imonth - 1) + " " + Iyear.ToString(CultureInfo.CurrentCulture));
+            {         
+                double HJD = MoonJD[i];
+                int Hm = (int)newMoonDate[i + 14];
+                string hijriDate = String.Format(CultureInfo.CurrentCulture, "First of " +
+                    NativeMethods.hijriMonthName(Hm-1,1) + " " + newMoonDate[i].ToString(CultureInfo.CurrentCulture));
                 NativeMethods.JD2Cal(ref HJD, ref Iyear, ref Imonth, ref Iday, ref hour);
                 string gregHijri = String.Format(CultureInfo.CurrentCulture, Iyear.ToString(CultureInfo.CurrentCulture) + "/" +
                     Imonth.ToString(CultureInfo.CurrentCulture) + "/" + Iday.ToString(CultureInfo.CurrentCulture));
@@ -1172,22 +1116,8 @@ namespace TheMoonAndSun
                 string persHijri = String.Format(CultureInfo.CurrentCulture, Iyear.ToString(CultureInfo.CurrentCulture) + "/" +
                     Imonth.ToString(CultureInfo.CurrentCulture) + "/" + Iday.ToString(CultureInfo.CurrentCulture));
 
-                w3.hijriMonths.AppendText(hijriDate + " \t Gregory: " + gregHijri + "\t Iranian: " +
-                    persHijri + "\r\n");
-                w3.hijriMonths.AppendText(" Sun set time: " + Utility.hour2Time(criteria[11]) + "\t");
-                w3.hijriMonths.AppendText(" Moon Azimuth = " + criteria[9].ToString("F2", CultureInfo.CurrentCulture) + "\t"
-                + "Moon Elevation = " + criteria[10].ToString("F2", CultureInfo.CurrentCulture) + "\r\n");
-                w3.hijriMonths.AppendText("Moon Visibility Criteria \r\n" +
-                    "Age = " + Utility.hour2Time(criteria[0]) + " , Lag = " + Utility.hour2Time(criteria[1])
-                    + " , Percent of Moon phase = " + (criteria[2]).ToString("P2", CultureInfo.CurrentCulture)
-                    + " , DAZ = " + criteria[3].ToString("F3", CultureInfo.CurrentCulture));
-                w3.hijriMonths.AppendText(" , ARCV = " + criteria[4].ToString("F3", CultureInfo.CurrentCulture)
-                   + " , Cos(ARCL) = " + criteria[5].ToString("F4", CultureInfo.CurrentCulture) + ", TopoDia = "
-                   + criteria[6].ToString("F3", CultureInfo.CurrentCulture) + ", W_p = " + criteria[7].ToString("F4", CultureInfo.CurrentCulture));
-                w3.hijriMonths.AppendText(" , " + method + criteria[8].ToString("F2", CultureInfo.CurrentCulture) + "\r\n");
-                w3.hijriMonths.AppendText("\r\n");
-
-                newMoonMon = newMoonMon + 1;
+                w3.hijriMonths.AppendText(hijriDate + " \t Gregory: " + gregHijri + "\t Iranian: " + persHijri + "\r\n");                
+                w3.hijriMonths.AppendText("\r\n");                
             }
 
         }
@@ -1283,19 +1213,22 @@ namespace TheMoonAndSun
 
             int k = 0;
             double JD = NativeMethods.TrueJDEquiSolitice(ref year1, ref k);
-            JD = JD + Geo[3] / 24.0;
-            int Jyear = 1;
-            int Jmonth = 1;
-            int Jday = 1;
-            double Hours = 0.0;
-            NativeMethods.JD2IrCal(ref JD, ref Jyear, ref Jmonth, ref Jday, ref Hours);
 
             int Iyear = 1;
             int Imonth = 1;
             int Iday = 1;
             double FD = 0.0;
-            
+            int J = 0;
+            double DELTA_T = 0.0;
             NativeMethods.JD2Cal(ref JD, ref Iyear, ref Imonth, ref Iday, ref FD);
+            NativeMethods.iau_DAT(ref Iyear, ref Imonth, ref Iday, ref FD, ref DELTA_T, ref J);           
+            JD = JD + Geo[3] / 24.0 - (DELTA_T+32.184)/(24.0*3600);
+            int Jyear = 1;
+            int Jmonth = 1;
+            int Jday = 1;
+            double Hours = 0.0;
+            NativeMethods.JD2IrCal(ref JD, ref Jyear, ref Jmonth, ref Jday, ref Hours);
+            
             
             int UT_TT = 0;
 
@@ -1309,13 +1242,19 @@ namespace TheMoonAndSun
             int MarDay = 20;
             double Uhour = 0.0;
 
-            double[][] MoonJD = new double[15][];
-            for (int i = 0; i <= 14; i++)
+            double[][] MoonJD = new double[14][];
+            for (int i = 0; i <= 13; i++)
             {
                 MoonJD[i] = new double[4];
             }
 
-            double[] newHijriJD = new double[15];
+            double[] newHijriJD = new double[14];
+            int[][] newMoonDate = new int[14][];
+            for (int i = 0; i <= 13; i++)
+            {
+                newMoonDate[i] = new int[2];
+            }
+
             int oYear = 1;
             int oMonth = 1;
             int oDay = 1;
@@ -1335,7 +1274,9 @@ namespace TheMoonAndSun
                 if (NativeMethods.GregIsLeapYear(ref Iyear)) { daysGregmonth[1] = 29; }
                 NativeMethods.IranCalendar(ref oYear, ref Gyear, ref IUJD, ref leap, Equinox, ref MarDay, ref Uhour);
                 if (leap is true) { daysIranmonth[11] = 30; }
-                NativeMethods.YearMoonPhases(Iyear, Im, Id, MoonJD);        
+                NativeMethods.YearMoonPhases(Iyear, Im, 15, MoonJD);
+                NativeMethods.HijriMonths(Iyear, Im, 15, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
+                    newHijriJD, newMoonDate);
             }
             else if ((bool)persCalendar.IsChecked)
             {
@@ -1349,7 +1290,8 @@ namespace TheMoonAndSun
                 if (leap) daysIranmonth[11] = 30;
                 if (NativeMethods.GregIsLeapYear(ref Gyear)) { daysGregmonth[1] = 29; }
                 NativeMethods.YearMoonPhases(Gyear, oMonth, MarDay, MoonJD);
-                Dy = Dy + daysGregmonth[0] + daysGregmonth[1] + MarDay;            
+                NativeMethods.HijriMonths(Gyear, oMonth, MarDay, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
+                    newHijriJD, newMoonDate);
             }
 
             w4.MoonCaledar.AppendText(string.Format(CultureInfo.CurrentCulture, "{0,80}", " Moon Caledar For Year " + yearText + "\r\n"));
@@ -1371,33 +1313,25 @@ namespace TheMoonAndSun
                         + Atmos[1].ToString("F2", CultureInfo.CurrentCulture));
             }
 
-            int Adjust = 0;
-
-            for (int i = 0; i <= 14; i++)
-            {
-                NativeMethods.HijriAdjust(ref MoonJD[i][0], Geo, ref UT_TT, ref Method, ref B_Ilum,
-                    ref aidAccepted, ref newHijriJD[i], ref Adjust);
-            }
-
+            double NMJD = 0.0;
             int Hy = 1;
             int Hm = 1;
             int Hd = 1;
+            double h = 0.0;            
 
-            for (int n = 0; n <= 3; n++)
+            NativeMethods.JD2TradHijri(ref UJD, Geo, Atmos,ref UT_TT, ref Method, ref B_Ilum,
+                ref aidAccepted, ref Iref, ref NMJD, ref Hy, ref Hm, ref Hd, ref h);
+
+            for(int km = 0; km<=3; km++)
             {
-                if (UJD < newHijriJD[n])
+                if (newHijriJD[km] > NMJD) 
                 {
-                    double HJD = newHijriJD[n - 1] + 14.0;
-                    NativeMethods.JD2Hijri(ref HJD, ref Hy, ref Hm, ref Hd);
-                    Hd = Convert.ToInt32(UJD - newHijriJD[n - 1]) + 1;
-                    k = n;
-                    break;
+                    k = km ;                    
+                    break; 
                 }
             }
-
-            int[] jDate = { Iyear, 1, 1 };
-
-            double TJD = UJD;
+            
+            int[] jDate = { Iyear, 1, 1 };            
 
             double[][] mRTSJD = new double[3][];
             double[][] mRTS_Hours = new double[3][];
@@ -1409,27 +1343,26 @@ namespace TheMoonAndSun
                 mRTS_Angles[i] = new double[3];
             }
 
-            double DJD = TJD - Geo[3] / 24.0;
+            double DJD = UJD;
             double BJD = DJD - 1.0;
-            double[] Geo1 = new double[4];
+            double[] Geo1 = new double[4];           
             for (int l = 0; l <=3; l++ )
             {
-                Geo1[l] = Geo[l];
+                Geo1[l] = Geo[l]; 
             }
             
-
             NativeMethods.Moon_RTS(jDate ,ref BJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[0], mRTSJD[0], mRTS_Angles[0]);
             
             NativeMethods.Moon_RTS(jDate, ref DJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[1], mRTSJD[1], mRTS_Angles[1]);
 
-            int weekDaynum = NativeMethods.JD2WeekDayNum(TJD + (Uhour + Geo[3]) / 24.0);
-           
+            int weekDaynum = NativeMethods.JD2WeekDayNum(UJD + (Uhour + Geo1[3]) / 24.0);
+            
             for (int i = 0; i < 12; i++)
             {
-                string strOyear = null;
-                string mainMonth = null;
-                string strOmonth = null;
-                string strHmonth = null;
+               string strOyear = null;
+               string mainMonth = null;
+               string strOmonth = null;
+               string strHmonth = null;
 
                 if ((bool)gregCalendar.IsChecked)
                 {
@@ -1445,22 +1378,24 @@ namespace TheMoonAndSun
                     dayInMonth = daysIranmonth[i];
                     dayInOtherMonth = daysGregmonth[oMonth - 1];
                 }
-
+   
                 string strHYear = Hy.ToString(CultureInfo.CurrentCulture);
-
+   
                 w4.MoonCaledar.AppendText(
                     " ================================================================================================"
                  + "==========================\r\n");
                 w4.MoonCaledar.AppendText(string.Format(CultureInfo.CurrentCulture, "{0,60}", mainMonth + " " + yearText + "\r\n"));
-
+   
 
                 if ((bool)msiseAtm.IsChecked)
                 {
                     if (Dy > 365) { Dy = Dy - 365; }
-                    Atmos = getAtm(Geo, Dy);
+                    Atmos = getAtm(Geo1, Dy);
 
-                    w4.MoonCaledar.AppendText(" pressure: " + Atmos[0].ToString("F2", CultureInfo.CurrentCulture)
-                        + " \t Temperature: " + Atmos[1].ToString("F2", CultureInfo.CurrentCulture) + "\r\n");
+                    string strPres = Atmos[0].ToString("F2", CultureInfo.CurrentCulture);
+                    string strTemp = Atmos[1].ToString("F2", CultureInfo.CurrentCulture);
+                    string strAtm = string.Format(CultureInfo.CurrentCulture, "Pressure: {0}   Temperature: {1}",strPres,strTemp );
+                    w4.MoonCaledar.AppendText(strAtm + "\r\n");
 
                     Dy = Dy + 30;
                 }
@@ -1499,88 +1434,101 @@ namespace TheMoonAndSun
                             strOmonth = string.Format(CultureInfo.CurrentCulture, "{0,9}", "#  ");
                         }
                     }
-
+       
                     if (Hd == 1 | j == 1)
                     {
-                        strHmonth = NativeMethods.hijriMonthName(Hm - 1, 1);
+                        int km = k - 1;
+                        if(km < 0) { km = 11; }
+                        strHmonth = NativeMethods.hijriMonthName(newMoonDate[km][1]-1, 1);                     
                     }
                     else
                     {
                         strHmonth = string.Format(CultureInfo.CurrentCulture, "{0,18}", "#  ");
                     }
-
+        
                     double AJD = DJD + 1.0;
                     if ((bool)DST.IsChecked)
                     {
-                        if (TJD >= dstJD[0] & TJD < dstJD[1]) 
-                        {                           
-                            Geo1[3] = Geo[3] + 1.0;
+                        if (AJD >= dstJD[0] ) 
+                       {   
+                            Geo1[3] = Geo[3] +1.0;
                         }
-                        else
-                        {                                                    
-                           Geo1[3] = Geo[3];
-                        }                        
+                        else if(AJD >= dstJD[1])
+                       {                                                    
+                          Geo1[3] = Geo[3];
+                       }                        
                     }
-                    
+                   
                     NativeMethods.Moon_RTS(jDate, ref AJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[2], mRTSJD[2], mRTS_Angles[2]);
+            
+                    double[] moonRTSJD = new double[4];               
+                    string[] moonEvents = new string[4];
+               
+                    NativeMethods.MoonRiseTranSet(DJD, mRTSJD, mRTS_Hours, mRTS_Angles, Geo1[3], moonEvents, moonRTSJD);
 
-                    double[] moonRTSJD = new double[6];
-                    string[] moonEvents = new string[6];
-                    
-                    NativeMethods.moon_RiseTranSet3(DJD, Geo1[3] , mRTSJD, mRTS_Hours, mRTS_Angles, moonRTSJD, moonEvents);
-              
                     double hour = 0.0;
                     double IlumRatio = 0.0;
-                    
-                    for(int il=0; il< moonRTSJD.Length; il++)
+                    string [] mEvents = new string[4];                   
+
+                    int ms = 0;
+
+                    for (int il=0; il<=3; il++)
                     {
-                        if(moonRTSJD[il] != 0.0)
+                        string strIlum = null;
+                        mEvents[ms] = null;
+                        if (moonRTSJD[il] != 0.0)
                         {
                             NativeMethods.Moon_IlumRatio(jDate, ref hour, ref moonRTSJD[il], ref UT_TT, ref IlumRatio);
-                            moonEvents[il] = moonEvents[il] + " , " + IlumRatio.ToString("F2", CultureInfo.CurrentCulture);
-                        }
+                            strIlum = IlumRatio.ToString("0.0000", CultureInfo.CurrentCulture);
+                            mEvents[ms] = String.Format(CultureInfo.CurrentCulture,"{0},{1}",moonEvents[il],strIlum);
+                            ms = ms + 1;
+                        }                                             
                     }
 
                     string MoonStat = "           ";
 
-                    for (int m = i - 1; m <= i + 1; m++)
-                    {                        
-                        if (m < 0) { m = 0; }
+                    for (int m = i; m <= i + 2; m++)
+                    {   
                         for (int n = 0; n <= 3; n++)
                         {                            
-                            if (TJD <= MoonJD[m][n] + Geo[3] / 24.0 & (TJD + 1.0) > MoonJD[m][n] + Geo[3] / 24.0)
+                            if (DJD == MoonJD[m][n]- MoonJD[m][n]%1.0-0.5 )
                             {
                                 if (n == 0)
                                 {
-                                    MoonStat = " New Moon";
+                                    MoonStat = "New Moon  ";
                                     break;
                                 }
                                 else if (n == 1)
                                 {
-                                    MoonStat = " First Half";
+                                    MoonStat = "First Half";
                                     break;
                                 }
                                 else if (n == 2)
                                 {
-                                    MoonStat = " Full Moon";
+                                    MoonStat = "Full Moon ";
                                     break;
                                 }
                                 else
                                 {
-                                    MoonStat = " Last Half";
+                                    MoonStat = "Last Half ";
                                     break;
                                 }
                             }
                         }
                     }
 
-                   w4.MoonCaledar.AppendText(NativeMethods.WeekDays(weekDaynum, 1) + "  " + j.ToString("D2", CultureInfo.CurrentCulture)
-                            + "  " + strOmonth + "," + oDay.ToString("D2", CultureInfo.CurrentCulture) + "  " + strHmonth + "," +
-                            Hd.ToString("D2", CultureInfo.CurrentCulture) + MoonStat );
-                
-                    for (int l=0; l <moonEvents.Length; l++)
+                    string strWekDy = NativeMethods.WeekDays(weekDaynum, 1);
+                    string strNum = j.ToString("D2", CultureInfo.CurrentCulture);
+                    string strOday = oDay.ToString("D2", CultureInfo.CurrentCulture);
+                    string strHd = Hd.ToString("D2", CultureInfo.CurrentCulture);
+                    string strCalendar = string.Format(CultureInfo.CurrentCulture, 
+                        "{0} {1} {2},{3} {4},{5} {6}",strWekDy,strNum,strOmonth,strOday,strHmonth,strHd,MoonStat);
+                   
+                    w4.MoonCaledar.AppendText(strCalendar);
+
+                    for (int lm=0; lm <ms; lm++)
                      {                        
-                         w4.MoonCaledar.AppendText("\t" + moonEvents[l]);                      
+                         w4.MoonCaledar.AppendText("\t" + mEvents[lm]);                      
                      }
                     
                     w4.MoonCaledar.AppendText("\r\n");
@@ -1594,9 +1542,8 @@ namespace TheMoonAndSun
                             mRTS_Angles[n][l] = mRTS_Angles[n + 1][l];
                         }
                     }
-
-                    TJD += 1.0;
-                    DJD = TJD - Geo1[3] / 24.0;
+         
+                    DJD = DJD + 1.0;
                     weekDaynum += 1;
                     oDay += 1;
                     if (oDay > dayInOtherMonth)
@@ -1610,16 +1557,12 @@ namespace TheMoonAndSun
                         }
                     }
                     Hd += 1;
-                    if (TJD == newHijriJD[k])
+                    if (DJD == newHijriJD[k])
                     {
-                        k = k + 1;
                         Hd = 1;
-                        Hm = Hm + 1;
-                        if (Hm > 12)
-                        {
-                            Hm = 1;
-                            Hy = (Hy + 1);
-                        }
+                        Hm = newMoonDate[k][1];
+                        Hy = newMoonDate[k][0];
+                        k = k + 1; 
                     }
                 }
                 w4.waitWarn.Content = null;
@@ -1711,30 +1654,44 @@ namespace TheMoonAndSun
             }
 
             int year1 = getYear();
+            int month1 = getMonth();
+            int day1 = getDay();
             string yearText = year.Text;
+
             if ((bool)persCalendar.IsChecked)
             {
                 yearText = irYear.Text;
-                year1 = year1 - 1;
+                if (month1 < 3)
+                {
+                    year1 = year1 - 1;
+                }  
+                else if(month1 == 3 & day1 < 21)
+                {
+                    year1 = year1 - 1;
+                }                
             }
 
             int k = 0;
             double JD = NativeMethods.TrueJDEquiSolitice(ref year1, ref k);
-            JD = JD + Geo[3] / 24.0;
-            int Jyear = 1;
-            int Jmonth = 1;
-            int Jday = 1;
-            double Hours = 0.0;
-            NativeMethods.JD2IrCal(ref JD, ref Jyear, ref Jmonth, ref Jday, ref Hours);
+            
             double DJ1 = 0.0;
             int Iyear = 1;
             int Imonth = 1;
             int Iday = 1;
             double FD = 0.0;
-        
-            NativeMethods.iauJD2Cal(ref JD, ref DJ1, ref Iyear, ref Imonth, ref Iday, ref FD, ref k);           
-            Hours = FD * 24.0;
+            double DELTA_T = 0.0;
+            int J = 0;
+            NativeMethods.iauJD2Cal(ref JD, ref DJ1, ref Iyear, ref Imonth, ref Iday, ref FD, ref k);
+            NativeMethods.iau_DAT(ref Iyear, ref Imonth, ref Iday, ref FD, ref DELTA_T, ref J);
 
+            JD = JD + Geo[3] / 24.0 - (DELTA_T + 32.184) / (24.0 * 3600);
+
+            int Jyear = 1;
+            int Jmonth = 1;
+            int Jday = 1;
+            double Hours = 0.0;
+            NativeMethods.JD2IrCal(ref JD, ref Jyear, ref Jmonth, ref Jday, ref Hours);
+            
             int UT_TT = 0;
 
             double UJD = 0.0;
@@ -1747,13 +1704,19 @@ namespace TheMoonAndSun
             int MarDay = 20;
             double Uhour = 0.0;
 
-            double[][] MoonJD = new double[15][];
-            for (int i = 0; i <= 14; i++)
+            double[] newHijriJD = new double[14];
+            int[][] newMoonDate = new int[14][];
+            for (int i = 0; i <= 13; i++)
+            {
+                newMoonDate[i] = new int[2];
+            }
+
+            double[][] MoonJD = new double[14][];
+            for (int i = 0; i <= 13; i++)
             {
                 MoonJD[i] = new double[4];
             }
-
-            double[] newHijriJD = new double[15];
+            
             int oYear = 1;
             int oMonth = 1;
             int oDay = 1;
@@ -1774,7 +1737,9 @@ namespace TheMoonAndSun
                 if (NativeMethods.GregIsLeapYear(ref Iyear)) { daysGregmonth[1] = 29; }
                 NativeMethods.IranCalendar(ref oYear, ref Gyear, ref IUJD, ref leap, Equinox, ref MarDay, ref Uhour);
                 if (leap is true) { daysIranmonth[11] = 30; }
-                NativeMethods.YearMoonPhases(Iyear, Im, Id, MoonJD);           
+                NativeMethods.YearMoonPhases(Iyear, Im, Id, MoonJD);                
+                NativeMethods.HijriMonths(Iyear, Im, 15, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
+                    newHijriJD, newMoonDate);
             }
             else if ((bool)persCalendar.IsChecked)
             {
@@ -1787,7 +1752,9 @@ namespace TheMoonAndSun
                 NativeMethods.JD2Cal(ref UJD, ref oYear, ref oMonth, ref oDay, ref H);
                 if (leap) daysIranmonth[11] = 30;
                 if (NativeMethods.GregIsLeapYear(ref Gyear)) { daysGregmonth[1] = 29; }
-                NativeMethods.YearMoonPhases(Gyear, oMonth, MarDay, MoonJD);
+                NativeMethods.YearMoonPhases(Gyear, oMonth, MarDay, MoonJD);               
+                NativeMethods.HijriMonths(Gyear, oMonth, MarDay, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
+                    newHijriJD, newMoonDate);
                 Dy = Dy + daysGregmonth[0] + daysGregmonth[1] + MarDay;           
             }
 
@@ -1810,39 +1777,30 @@ namespace TheMoonAndSun
                 + Atmos[1].ToString("F2", CultureInfo.CurrentCulture) + "\r\n");
             }
 
-            int Adjust = 0;
-
-            for (int i = 0; i <= 14; i++)
-            {
-                NativeMethods.HijriAdjust(ref MoonJD[i][0], Geo, ref UT_TT, ref Method, ref B_Ilum,
-                    ref aidAccepted, ref newHijriJD[i], ref Adjust);
-            }
-
+            double NMJD = 0.0;
             int Hy = 1;
             int Hm = 1;
             int Hd = 1;
+            double h = 0.0;
 
-            for (int n = 0; n <= 3; n++)
+            NativeMethods.JD2TradHijri(ref UJD, Geo, Atmos, ref UT_TT, ref Method, ref B_Ilum,
+                ref aidAccepted, ref Iref, ref NMJD, ref Hy, ref Hm, ref Hd, ref h);
+
+            for (int km = 0; km <= 3; km++)
             {
-                if (UJD < newHijriJD[n])
+                if (newHijriJD[km] > NMJD)
                 {
-                    double HJD = newHijriJD[n - 1] + 14.0;
-                    NativeMethods.JD2Hijri(ref HJD, ref Hy, ref Hm, ref Hd);
-                    Hd = Convert.ToInt32(UJD - newHijriJD[n - 1]) + 1;
-                    k = n;
+                    k = km;
                     break;
                 }
             }
 
             int[] jDate = { Iyear, 1, 1 };
 
-            double TJD = UJD;
-
-            int weekDaynum = NativeMethods.JD2WeekDayNum(TJD + (Uhour + Geo[3]) / 24.0);
-
             double[][] mRTSJD = new double[3][];
             double[][] mRTS_Hours = new double[3][];
             double[][] mRTS_Angles = new double[3][];
+
             for (int i = 0; i <= 2; i++)
             {
                 mRTSJD[i] = new double[3];
@@ -1850,7 +1808,7 @@ namespace TheMoonAndSun
                 mRTS_Angles[i] = new double[3];
             }
 
-            double DJD = TJD - Geo[3] / 24.0;
+            double DJD = UJD;
             double BJD = DJD - 1.0;
             double[] Geo1 = new double[4];
             for (int l = 0; l <= 3; l++)
@@ -1861,7 +1819,10 @@ namespace TheMoonAndSun
             NativeMethods.Moon_RTS(jDate, ref BJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[0], mRTSJD[0], mRTS_Angles[0]);
 
             NativeMethods.Moon_RTS(jDate, ref DJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[1], mRTSJD[1], mRTS_Angles[1]);
-           
+
+            int weekDaynum = NativeMethods.JD2WeekDayNum(UJD + (Uhour + Geo1[3]) / 24.0);
+
+            
             for (int i = 0; i < 12; i++)
             {
                 string strOyear = null;
@@ -1889,7 +1850,7 @@ namespace TheMoonAndSun
                 w5.sunMoonCaledar.AppendText(
              " ================================================================================================"
             + "================================================================================================"
-            + "========================\r\n");
+            + "===================\r\n");
                 w5.sunMoonCaledar.AppendText(string.Format(CultureInfo.CurrentCulture, "{0,75}", mainMonth + " " + yearText + "\r\n"));
 
                 if ((bool)msiseAtm.IsChecked)
@@ -1903,14 +1864,14 @@ namespace TheMoonAndSun
                     Dy = Dy + 30;
                 }
 
-                w5.sunMoonCaledar.AppendText("                                                           Tweilights"
-                    + "                SunRise            Noon           SunSet                Tweilights               Moon Phase      "
-                    + "           Moon                    Moon                     Moon\r\n");
+                w5.sunMoonCaledar.AppendText( 
+                    "                                                      SunRise            Noon           SunSet      "
+                    + "           Moon               Moon                    Moon                     Moon\r\n");
                 w5.sunMoonCaledar.AppendText("  " + mainMonth + "         " + strOyear + "               " + strHYear
-                 + "   Astronomical  Nautical  Civic    Time-Azimuth    Time-Elevation    Time-Azimuth      Civic    Nautical  Astronomical"
+                 + "      Time-Azimuth    Time-Elevation    Time-Azimuth     "
                  + "                         Time-Angle               Time-Angle                Time-Angle\r\n");
                 w5.sunMoonCaledar.AppendText("------------------------------------------------------------------------------------------------------------"
-                 + "-------------------------------------------------------------------------------------------------------------\r\n");
+                 + "--------------------------------------------------------------------------------------------------------\r\n");
 
                 for (int j = 1; j <= dayInMonth; j++)
                 {
@@ -1948,29 +1909,11 @@ namespace TheMoonAndSun
                     {
                         strHmonth = string.Format(CultureInfo.CurrentCulture, "{0,18}", "#  ");
                     }
-
-                    double[] Times = new double[9];
-                    double[] RSTJD = new double[3];
-                    double[] RTS_Angles = new double[3];
-
-                    NativeMethods.AstroSolarTimes(ref TJD, jDate, Geo, Atmos, ref UT_TT, ref Iref, Times, RSTJD, RTS_Angles);
-
-
-                    if ((bool)DST.IsChecked)
-                    {
-                        if (TJD >= dstJD[0] & TJD <  dstJD[1])
-                        {
-                            for (int m = 0; m <= 8; m++)
-                            {
-                                Times[m] += 1.0;
-                            }
-                        }
-                    }
-
+            
                     double AJD = DJD + 1.0;
                     if ((bool)DST.IsChecked)
                     {
-                        if (TJD >= dstJD[0] & TJD < dstJD[1])
+                        if (DJD >= dstJD[0] & DJD < dstJD[1])
                         {
                             Geo1[3] = Geo[3] + 1.0;
                         }
@@ -1980,25 +1923,30 @@ namespace TheMoonAndSun
                         }
                     }
 
-                    NativeMethods.Moon_RTS(jDate, ref AJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[2], mRTSJD[2], mRTS_Angles[2]);
+                    double[] Times = new double[3];
+                    double[] RSTJD = new double[3];
+                    double[] RTS_Angles = new double[3];
 
-                    double[] moonRTSJD = new double[6];
-                    string[] moonEvents = new string[6];
+                    NativeMethods.SolarTimes(ref DJD, jDate, Geo1, Atmos, ref UT_TT, ref Iref, Times, RSTJD, RTS_Angles);
 
-                    NativeMethods.moon_RiseTranSet3(DJD, Geo1[3], mRTSJD, mRTS_Hours, mRTS_Angles, moonRTSJD, moonEvents);
+                    NativeMethods.Moon_RTS(jDate, ref AJD, Geo1, Atmos, ref UT_TT, ref Iref, mRTS_Hours[2], mRTSJD[2], mRTS_Angles[2]);                   
+
+                    double[] moonRTSJD = new double[4];
+                    string[] moonEvents = new string[4];
+
+                    NativeMethods.MoonRiseTranSet(DJD, mRTSJD, mRTS_Hours, mRTS_Angles, Geo1[3], moonEvents, moonRTSJD);
                     
                     string MoonStat = "            ";
 
-                    for (int m = i - 1; m <= i + 1; m++)
-                    {
-                        if (m < 0) { m = 0; }
+                    for (int m = i; m <= i + 2; m++)
+                    {                        
                         for (int n = 0; n <= 3; n++)
                         {
-                            if (TJD <= MoonJD[m][n] + Geo[3] / 24.0 & (TJD + 1.0) > MoonJD[m][n] + Geo[3] / 24.0)
+                            if (DJD == MoonJD[m][n] - MoonJD[m][n] % 1.0 - 0.5)
                             {
                                 if (n == 0)
                                 {
-                                    MoonStat = " New Moon";
+                                    MoonStat = " New Moon  ";
                                     break;
                                 }
                                 else if (n == 1)
@@ -2008,25 +1956,25 @@ namespace TheMoonAndSun
                                 }
                                 else if (n == 2)
                                 {
-                                    MoonStat = " Full Moon";
+                                    MoonStat = " Full Moon ";
                                     break;
                                 }
                                 else
                                 {
-                                    MoonStat = " Last Half";
+                                    MoonStat = " Last Half ";
                                     break;
                                 }
                             }
                         }
-                    }                                     
-
+                    }
+                
                     w5.sunMoonCaledar.AppendText(NativeMethods.WeekDays(weekDaynum, 2) + "  " + j.ToString("D2", CultureInfo.CurrentCulture)
                     + "  " + strOmonth + "," + oDay.ToString("D2", CultureInfo.CurrentCulture) + "  " + strHmonth + "," +
-                    Hd.ToString("D2", CultureInfo.CurrentCulture) + "  " + Utility.hour2Time(Times[0]) + "  " + Utility.hour2Time(Times[1]) + "  " + Utility.hour2Time(Times[2])
-                    + "  " + Utility.hour2Time(Times[3]) + "-" + RTS_Angles[0].ToString("000.00", CultureInfo.CurrentCulture)
-                    + "  " + Utility.hour2Time(Times[4]) + "-" + RTS_Angles[1].ToString("000.00", CultureInfo.CurrentCulture)
-                    + "  " + Utility.hour2Time(Times[5]) + "-" + RTS_Angles[2].ToString("000.00", CultureInfo.CurrentCulture)
-                    + "  " + Utility.hour2Time(Times[6]) + "  " + Utility.hour2Time(Times[7]) + "  " + Utility.hour2Time(Times[8]) + MoonStat);
+                    Hd.ToString("D2", CultureInfo.CurrentCulture)                     
+                    + "  " + Utility.hour2Time(Times[0]) + "-" + RTS_Angles[0].ToString("000.00", CultureInfo.CurrentCulture)
+                    + "  " + Utility.hour2Time(Times[1]) + "-" + RTS_Angles[1].ToString("000.00", CultureInfo.CurrentCulture)
+                    + "  " + Utility.hour2Time(Times[2]) + "-" + RTS_Angles[2].ToString("000.00", CultureInfo.CurrentCulture)
+                    +"  " + MoonStat);
 
                     for (int l = 0; l < moonEvents.Length; l++)
                     {
@@ -2045,8 +1993,7 @@ namespace TheMoonAndSun
                         }
                     }
 
-                    TJD += 1.0;
-                    DJD = TJD - Geo1[3] / 24.0;
+                    DJD += 1.0;                    
                     weekDaynum += 1;
                     oDay += 1;
                     if (oDay > dayInOtherMonth)
@@ -2059,17 +2006,14 @@ namespace TheMoonAndSun
                             oYear = (oYear + 1);
                         }
                     }
+                    
                     Hd += 1;
-                    if (TJD == newHijriJD[k])
+                    if (DJD == newHijriJD[k])
                     {
-                        k = k + 1;
                         Hd = 1;
-                        Hm = Hm + 1;
-                        if (Hm > 12)
-                        {
-                            Hm = 1;
-                            Hy = (Hy + 1);
-                        }
+                        Hm = newMoonDate[k][1];
+                        Hy = newMoonDate[k][0];
+                        k = k + 1;
                     }
                 }
 
