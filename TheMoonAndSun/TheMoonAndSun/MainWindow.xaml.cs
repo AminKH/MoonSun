@@ -906,21 +906,27 @@ namespace TheMoonAndSun
             Geo[2] = getAltitude();
             Geo[3] = getTimeZone();
 
-            calendarChange();
-            int ye = getYear();
-
+           // calendarChange();
+            int year1 = getYear();
+            int month1 = getMonth();
+            int day1 = getDay();
             string yearText = year.Text;
             if ((bool)persCalendar.IsChecked)
             {
                 yearText = irYear.Text;
-                ye = ye - 1;
+                int Iryear = getIrYear();
+                int Irmonth = getIrMonth();
+                int Irday = getIrDay();
+                double Hour = 0.0;
+                double IrJD = NativeMethods.IrCal2JD(ref Iryear, ref Irmonth, ref Irday, ref Hour);
+                NativeMethods.JD2Cal(ref IrJD, ref year1, ref month1, ref day1, ref Hour);
             }
 
             double GeoNDST = Geo[3];
             double GeoDST = Geo[3] + 1.0;
 
             int newMon = 1;
-            int day = 15;
+            int day = 1;
             if ((bool)persCalendar.IsChecked)
             { 
                 newMon = 3;
@@ -933,7 +939,7 @@ namespace TheMoonAndSun
                 moonPhaseJD[i] = new double[4];
             }            
 
-            NativeMethods.YearMoonPhases(ye, newMon, day, moonPhaseJD);
+            NativeMethods.YearMoonPhases(year1, newMon, day, moonPhaseJD);
 
             double JDM = 0.0;
             int Iyear = 1;
@@ -1008,14 +1014,21 @@ namespace TheMoonAndSun
             string geoName = Location.Text;
             if (geoName.Length == 0) geoName = "---------";
 
-            calendarChange();
+          //  calendarChange();
 
-            int ye = getYear();
+            int year1 = getYear();
+            int month1 = getMonth();
+            int day1 = getDay();
             string yearText = year.Text;
             if ((bool)persCalendar.IsChecked)
             {
                 yearText = irYear.Text;
-                ye = ye - 1;
+                int Iryear = getIrYear();
+                int Irmonth = getIrMonth();
+                int Irday = getIrDay();
+                double Hour = 0.0;
+                double IrJD = NativeMethods.IrCal2JD(ref Iryear, ref Irmonth, ref Irday, ref Hour);
+                NativeMethods.JD2Cal(ref IrJD, ref year1, ref month1, ref day1, ref Hour);
             }
 
             double[] Atmos = getAtm(Geo);
@@ -1046,7 +1059,6 @@ namespace TheMoonAndSun
             string airConditin = null;
             if ((bool)dryAirSelect.IsChecked)
             {
-                B_Ilum = 0.0035;
                 airConditin = "Air : Dry, Minimum Moon Ilumination = " + B_Ilum.ToString("P2", CultureInfo.CurrentCulture);
             }
             else if ((bool)wetAirSelect.IsChecked)
@@ -1069,9 +1081,7 @@ namespace TheMoonAndSun
             }
 
             int UT_TT = 0;
-            double GeoNDST = Geo[3];
-            double GeoDST = Geo[3] + 1.0;
-                                                                      
+                                                                                  
             
             w3.hijriMonths.AppendText("\t\t\t Hijri Months For Year " + yearText + "\r\n");
             w3.hijriMonths.AppendText("=================================================================\r\n");
@@ -1084,9 +1094,10 @@ namespace TheMoonAndSun
             w3.hijriMonths.AppendText("\r\n");
 
             double[] MoonJD = new double[14];
-            long[] newMoonDate = new long[28];
-         
-            int day = 15;
+            int[] newMoonDate = new int[28];
+           // double[] PhaseJD = new double[56];
+
+            int day = 1;
             int newMoonMon = 1;
             if ((bool)persCalendar.IsChecked)
             {
@@ -1096,7 +1107,7 @@ namespace TheMoonAndSun
 
             double hour = 0.0;
 
-            NativeMethods.FhijriMonths(ref ye,ref newMoonMon,ref day, Geo, Atmos,ref UT_TT,ref Method,ref B_Ilum,ref  aidAccepted, 
+           NativeMethods.FhijriMonths(ref year1,ref newMoonMon,ref day, Geo, Atmos,ref UT_TT,ref Method,ref B_Ilum,ref aidAccepted, 
                 ref Iref, MoonJD, newMoonDate);
 
             int Iday = 1;
@@ -1106,7 +1117,7 @@ namespace TheMoonAndSun
             for (int i = 0; i <= 13; i++)
             {         
                 double HJD = MoonJD[i];
-                int Hm = (int)newMoonDate[i + 14];
+                int Hm = newMoonDate[i + 14];
                 string hijriDate = String.Format(CultureInfo.CurrentCulture, "First of " +
                     NativeMethods.hijriMonthName(Hm-1,1) + " " + newMoonDate[i].ToString(CultureInfo.CurrentCulture));
                 NativeMethods.JD2Cal(ref HJD, ref Iyear, ref Imonth, ref Iday, ref hour);
@@ -1204,15 +1215,22 @@ namespace TheMoonAndSun
             }
 
             int year1 = getYear();
+            int month1 = getMonth();
+            int day1 = getDay();
             string yearText = year.Text;
             if ((bool)persCalendar.IsChecked)
             {
                 yearText = irYear.Text;
-                year1 = year1 - 1;
+                int Iryear = getIrYear();
+                int Irmonth = getIrMonth();
+                int Irday = getIrDay();
+                double Hour = 0.0;
+                double IrJD =NativeMethods.IrCal2JD(ref Iryear, ref Irmonth,ref Irday,ref Hour);
+                NativeMethods.JD2Cal(ref IrJD,ref year1,ref month1,ref day1,ref Hour);                
             }
 
             int k = 0;
-            double JD = NativeMethods.TrueJDEquiSolitice(ref year1, ref k);
+            double JD = NativeMethods.TrueJDEquiSolitice(ref year1, ref k)+Geo[3]/24.0;
 
             int Iyear = 1;
             int Imonth = 1;
@@ -1220,16 +1238,16 @@ namespace TheMoonAndSun
             double FD = 0.0;
             int J = 0;
             double DELTA_T = 0.0;
-            NativeMethods.JD2Cal(ref JD, ref Iyear, ref Imonth, ref Iday, ref FD);
+            double jd1 = 0.0;
+            NativeMethods.iauJD2Cal(ref JD,ref jd1, ref Iyear, ref Imonth, ref Iday, ref FD, ref J);
             NativeMethods.iau_DAT(ref Iyear, ref Imonth, ref Iday, ref FD, ref DELTA_T, ref J);           
-            JD = JD + Geo[3] / 24.0 - (DELTA_T+32.184)/(24.0*3600);
+            JD = JD - ((DELTA_T + 32.184) / 3600.0 )/ 24.0;
             int Jyear = 1;
             int Jmonth = 1;
             int Jday = 1;
             double Hours = 0.0;
             NativeMethods.JD2IrCal(ref JD, ref Jyear, ref Jmonth, ref Jday, ref Hours);
-            
-            
+                       
             int UT_TT = 0;
 
             double UJD = 0.0;
@@ -1274,9 +1292,9 @@ namespace TheMoonAndSun
                 if (NativeMethods.GregIsLeapYear(ref Iyear)) { daysGregmonth[1] = 29; }
                 NativeMethods.IranCalendar(ref oYear, ref Gyear, ref IUJD, ref leap, Equinox, ref MarDay, ref Uhour);
                 if (leap is true) { daysIranmonth[11] = 30; }
-                NativeMethods.YearMoonPhases(Iyear, Im, 15, MoonJD);
-                NativeMethods.HijriMonths(Iyear, Im, 15, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
-                    newHijriJD, newMoonDate);
+                NativeMethods.YearMoonPhases(Iyear, Im, Id, MoonJD);
+                NativeMethods.HijriMonths(Iyear, Im, Id, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
+                    MoonJD, newHijriJD, newMoonDate);
             }
             else if ((bool)persCalendar.IsChecked)
             {
@@ -1291,7 +1309,7 @@ namespace TheMoonAndSun
                 if (NativeMethods.GregIsLeapYear(ref Gyear)) { daysGregmonth[1] = 29; }
                 NativeMethods.YearMoonPhases(Gyear, oMonth, MarDay, MoonJD);
                 NativeMethods.HijriMonths(Gyear, oMonth, MarDay, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
-                    newHijriJD, newMoonDate);
+                    MoonJD , newHijriJD, newMoonDate);
             }
 
             w4.MoonCaledar.AppendText(string.Format(CultureInfo.CurrentCulture, "{0,80}", " Moon Caledar For Year " + yearText + "\r\n"));
@@ -1491,7 +1509,7 @@ namespace TheMoonAndSun
                     {   
                         for (int n = 0; n <= 3; n++)
                         {                            
-                            if (DJD == MoonJD[m][n]- MoonJD[m][n]%1.0-0.5 )
+                            if (DJD <= MoonJD[m][n] + Geo1[3] / 24.0 & DJD + 1.0 >= MoonJD[m][n] + Geo1[3] / 24.0)
                             {
                                 if (n == 0)
                                 {
@@ -1657,41 +1675,36 @@ namespace TheMoonAndSun
             int month1 = getMonth();
             int day1 = getDay();
             string yearText = year.Text;
-
             if ((bool)persCalendar.IsChecked)
             {
                 yearText = irYear.Text;
-                if (month1 < 3)
-                {
-                    year1 = year1 - 1;
-                }  
-                else if(month1 == 3 & day1 < 21)
-                {
-                    year1 = year1 - 1;
-                }                
+                int Iryear = getIrYear();
+                int Irmonth = getIrMonth();
+                int Irday = getIrDay();
+                double Hour = 0.0;
+                double IrJD = NativeMethods.IrCal2JD(ref Iryear, ref Irmonth, ref Irday, ref Hour);
+                NativeMethods.JD2Cal(ref IrJD, ref year1, ref month1, ref day1, ref Hour);
             }
 
             int k = 0;
-            double JD = NativeMethods.TrueJDEquiSolitice(ref year1, ref k);
-            
-            double DJ1 = 0.0;
+            double JD = NativeMethods.TrueJDEquiSolitice(ref year1, ref k) + Geo[3] / 24.0;
+
             int Iyear = 1;
             int Imonth = 1;
             int Iday = 1;
             double FD = 0.0;
-            double DELTA_T = 0.0;
             int J = 0;
-            NativeMethods.iauJD2Cal(ref JD, ref DJ1, ref Iyear, ref Imonth, ref Iday, ref FD, ref k);
+            double DELTA_T = 0.0;
+            double jd1 = 0.0;
+            NativeMethods.iauJD2Cal(ref JD, ref jd1, ref Iyear, ref Imonth, ref Iday, ref FD, ref J);
             NativeMethods.iau_DAT(ref Iyear, ref Imonth, ref Iday, ref FD, ref DELTA_T, ref J);
-
-            JD = JD + Geo[3] / 24.0 - (DELTA_T + 32.184) / (24.0 * 3600);
-
+            JD = JD - ((DELTA_T + 32.184) / 3600.0) / 24.0;
             int Jyear = 1;
             int Jmonth = 1;
             int Jday = 1;
             double Hours = 0.0;
             NativeMethods.JD2IrCal(ref JD, ref Jyear, ref Jmonth, ref Jday, ref Hours);
-            
+
             int UT_TT = 0;
 
             double UJD = 0.0;
@@ -1737,9 +1750,9 @@ namespace TheMoonAndSun
                 if (NativeMethods.GregIsLeapYear(ref Iyear)) { daysGregmonth[1] = 29; }
                 NativeMethods.IranCalendar(ref oYear, ref Gyear, ref IUJD, ref leap, Equinox, ref MarDay, ref Uhour);
                 if (leap is true) { daysIranmonth[11] = 30; }
-                NativeMethods.YearMoonPhases(Iyear, Im, Id, MoonJD);                
-                NativeMethods.HijriMonths(Iyear, Im, 15, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
-                    newHijriJD, newMoonDate);
+                NativeMethods.YearMoonPhases(Iyear, Im, Id, MoonJD);
+                NativeMethods.HijriMonths(Iyear, Im, Id, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
+                    MoonJD, newHijriJD, newMoonDate);
             }
             else if ((bool)persCalendar.IsChecked)
             {
@@ -1752,9 +1765,9 @@ namespace TheMoonAndSun
                 NativeMethods.JD2Cal(ref UJD, ref oYear, ref oMonth, ref oDay, ref H);
                 if (leap) daysIranmonth[11] = 30;
                 if (NativeMethods.GregIsLeapYear(ref Gyear)) { daysGregmonth[1] = 29; }
-                NativeMethods.YearMoonPhases(Gyear, oMonth, MarDay, MoonJD);               
+                NativeMethods.YearMoonPhases(Gyear, oMonth, MarDay, MoonJD);
                 NativeMethods.HijriMonths(Gyear, oMonth, MarDay, Geo, Atmos, UT_TT, Method, B_Ilum, aidAccepted, Iref,
-                    newHijriJD, newMoonDate);
+                    MoonJD , newHijriJD, newMoonDate);
                 Dy = Dy + daysGregmonth[0] + daysGregmonth[1] + MarDay;           
             }
 
@@ -1942,7 +1955,7 @@ namespace TheMoonAndSun
                     {                        
                         for (int n = 0; n <= 3; n++)
                         {
-                            if (DJD == MoonJD[m][n] - MoonJD[m][n] % 1.0 - 0.5)
+                            if (DJD <= MoonJD[m][n]+Geo1[3]/24.0  & DJD+1.0 >= MoonJD[m][n] + Geo1[3] / 24.0 )
                             {
                                 if (n == 0)
                                 {

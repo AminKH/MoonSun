@@ -162,8 +162,7 @@ namespace ClassMoonSun
          [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
          [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
           ref int UT_TT, ref int Iref, [Out] double[] Times, [Out] double[] RSTJD, [Out] double[] RTS_Angles);
-       
-
+      
         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_sun_earth_vector")]
         public static extern void Sun_Earth_Vector(ref double Tc, ref double R);
 
@@ -172,14 +171,21 @@ namespace ClassMoonSun
         public static extern void Moon_Mean_Long_Lat_Dist(ref double T ,ref double Landa,ref double  Beta ,
             ref double Delta,ref double Lunar_Pi);
 
-        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_hijrimonths")]
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_hijrimonthcs")]
         public static extern void FhijriMonths(ref int year, ref int month, ref int day,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
             ref int UT_TT, ref int Method,ref double B_Ilum, ref int AidAccept, ref int IREF,
-            [Out] double[] NewMoonJD, [Out] long[] newMoonDate);
-      
-         [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_yearmoonphases")]
+            [Out] double[] NewMoonJD, [Out] int[] newMoonDate);
+
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_hijrifirstday")]
+        public static extern void hijriFirstDay(ref double JDE,
+           [MarshalAs(UnmanagedType.LPArray, SizeConst = 4)] double[] Geo,
+           [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] double[] Atmos,
+           ref int UT_TT, ref int Method, ref double B_Ilum, ref int AidAccept, ref int IREF,
+           ref double NewMoonJD, ref int Hyear, ref int Hmonth);
+        
+        [DllImport("StaticMoonSunC.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__moonsun_MOD_yearmoonphases")]
         public static extern void FyearMoonPhases(ref int year, ref int month, ref int day, [Out] double[] moonPhaseJD);
 
         [DllImport("StaticMSISE.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "__msise_MOD_gtd7tropo")]
@@ -409,20 +415,18 @@ namespace ClassMoonSun
 
         }
 
-        public static void HijriMonths(int Iyear, int Imonth, int Iday, double[] Geo, double[] Atmos, int UT_TT,
-            int Method, double Ilum, int AidAccept, int IREF,  double[] NewMoonJD,  int[][] newMoonDate)
+        public static void HijriMonths(int Iyear, int Imonth, int Iday, double[] Geo, double[] Atmos, 
+            int UT_TT, int Method, double Ilum, int AidAccept, int IREF, double[][] MoonPhaseJD,
+            double[] NewMoonJD, int[][] newMoonDate)
         {
-            long[] newMoonDate1 = new long[28];
-            
-           FhijriMonths(ref Iyear, ref Imonth, ref Iday, Geo, Atmos,ref UT_TT, ref Method,
-            ref Ilum, ref AidAccept, ref IREF, NewMoonJD, newMoonDate1);
+
+            YearMoonPhases(Iyear, Imonth, Iday, MoonPhaseJD);
 
             for (int i = 0; i <= 13; i++)
             {
-                for (int j = 0; j <= 1; j++)
-                {
-                    newMoonDate[i][j] = (int)newMoonDate1[i + j * 14];
-                }
+                hijriFirstDay(ref MoonPhaseJD[i][0], Geo, Atmos,
+           ref  UT_TT, ref  Method, ref Ilum, ref AidAccept, ref IREF,
+           ref NewMoonJD[i], ref newMoonDate[i][0], ref newMoonDate[i][1]);
             }
         }
 
@@ -430,8 +434,7 @@ namespace ClassMoonSun
              int UT_TT, int IREFR, string [] moonEvents,  double[] mRTSJD,  double[] mRTS_Hours,  double[] mRTS_Angles)
         {
             int[] mEvents = new int[4];
-            Moon_RTS_Events(Jdate, ref TJD, Geo, Atmos, ref UT_TT, ref IREFR, mEvents,
-                mRTSJD, mRTS_Hours, mRTS_Angles);
+            Moon_RTS_Events(Jdate, ref TJD, Geo, Atmos, ref UT_TT, ref IREFR, mEvents,mRTSJD, mRTS_Hours, mRTS_Angles);
 
             int j = 0;
             
