@@ -2620,8 +2620,6 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,RTSJD,RTShou
         if(Geo(2)>-30.D0 .or. Geo(2)<-60.D0) Geo1(2) = -45.D0
     end if
 
-    Rlat = dabs(Geo(2))*DegRad
-
     if (TJD == 0.D0) then
         TJD = CAL2JD ( JDate(1),JDate(2),JDate(3))
     endif
@@ -2636,8 +2634,6 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,RTSJD,RTShou
 
     SunAlt = Altitude
     Rsunalt = SunAlt*DEGRAD
-
-    Rlat = dabs(Geo(2))*DegRad
 
     AppSidTime = iau_GST00B ( TJD0, 0.D0 )/DEGRAD
 
@@ -2666,6 +2662,7 @@ subroutine SunRise_Set_Noon(TJD,JDate,Geo,Atmos,Altitude,UT_TT,IREF,RTSJD,RTShou
     end if
 
     Rdif = dif*DEGRAD
+    Rlat = dabs(Geo1(2))*DegRad
     dif  = datan(dsin(Rdif)/(dcos(Rdif)*dsin(Rlat)+dtan(Alt1*DEGRAD)*dcos(Rlat)))/DEGRAD
     RTSJD(1) = RTSJD(1)+ dif/(15.D0*24.D0)
 
@@ -3511,62 +3508,82 @@ end subroutine
       end subroutine
 !*******************************************************************************
 
-      subroutine YearMoonPhases(IYear,Imonth,Iday,moonPhaseJD)
+       subroutine YearMoonPhases(IYear,Imonth,Iday,moonPhaseJD)
 !     returns array of Julian day  of moon phases for one year
 
-        integer ::  I,k,Month,year,Iyear,Imonth,Iday
+        integer ::  I,k,Month,year,Iyear,Imonth,Iday, Day
+        real(kind=8) :: Hour, TJD, JD
         real(kind=8), dimension(14,0:3):: MoonPhaseJD
 
         Year = Iyear
-        month = Imonth - 1
-        if(month < 0) then
-            month = 12
-            year = year - 1
+        Month = Imonth
+
+        Do k  = 0, 3
+            call Moon_Phases(Year,IMonth,Iday, k, MoonPhaseJD(1,k))
+        End Do
+
+        TJD = MoonPhaseJD(1,0)
+        JD = CAL2JD(Year,IMonth,Iday)
+        if(TJD > JD+1.D0) then
+            month = Imonth - 1
+            if(month < 0) then
+                month = 12
+                year = year - 1
+            end if
         end if
 
-        do I = 1 , 14
+        do I = 2 , 14
+  10          TJD = TJD + 29.530587D0
+              call JD2CAL(TJD,year,Month,day,Hour)
               Do k  = 0, 3
-                    call Moon_Phases(Year,Month,Iday, k, MoonPhaseJD(I,k))
+                    call Moon_Phases(Year,Month,day, k, MoonPhaseJD(I,k))
               End Do
-              month = Month + 1
-              if(Month > 12) then
-                    Year = year + 1
-                    Month = 1
-              end if
+              if(Dint(MoonPhaseJD(I,0))<=dint(MoonPhaseJD(I-1,0))) goto 10
         end do
       end subroutine
 
-      subroutine HijriMonths(Iyear,Imonth,Iday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF,NewMoonJD,newMoonDate)
+      subroutine HijriMonths(IYear,Imonth,Iday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF,NewMoonJD,newMoonDate,MoonPhaseJD)
 !     returns array of Julian day of first day of Hijri months in one year
 
-            integer :: Iyear, Imonth,UT_TT, Method, AidAccept
-            integer :: I , Year, Month, Iday, Day
+            integer :: IYear,Imonth,Iday
+            integer :: I,UT_TT, Method, AidAccept
             integer :: IREF
             integer , dimension(14,2):: newMoonDate
-            real(kind=8) :: B_Ilum,astroNewMoonJD,JD
+            real(kind=8) :: B_Ilum
             real(kind=8), dimension(2) :: Atmos
             real(kind=8) , dimension(4) :: Geo
             real(kind=8) , dimension(14) :: newMoonJD
+            real(kind=8), dimension(14,0:3):: MoonPhaseJD
 
-            Year = Iyear
-            month = Imonth
-            Day = Iday
+
+            call YearMoonPhases(IYear,Imonth,Iday,moonPhaseJD)
             newMoonJD = 0.D0
             do I = 1 , 14
-    10          JD = CAL2JD(year,month,day)
-                call Moon_Phases(Year,Month,day, 0, astroNewMoonJD)
-                call HijrifirstDay(astroNewMoonJD,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF, &
+                call HijrifirstDay(MoonPhaseJD(I,0),Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF, &
                     newMoonJD(I),newMoonDate(I,1),newMoonDate(I,2))
-                if(JD-astroNewMoonJD < 0.D0) then
-                    Day = Day + 7
-                    goto 10
-                end if
+            end do
+      end subroutine
 
-                Month = Month + 1
-                if(Month > 12) then
-                    Year = year + 1
-                    Month = 1
-                end if
+!*******************************************************************************
+      subroutine HijriMonthCS(IYear,Imonth,Iday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF,NewMoonJD,newMoonDate)
+!     returns array of Julian day of first day of Hijri months in one year
+
+            integer :: IYear,Imonth,Iday
+            integer :: I,UT_TT, Method, AidAccept
+            integer :: IREF
+            integer , dimension(14,2):: newMoonDate
+            real(kind=8) :: B_Ilum
+            real(kind=8), dimension(2) :: Atmos
+            real(kind=8) , dimension(4) :: Geo
+            real(kind=8) , dimension(14) :: newMoonJD
+            real(kind=8), dimension(14,0:3):: MoonPhaseJD
+
+
+            call YearMoonPhases(IYear,Imonth,Iday,moonPhaseJD)
+            newMoonJD = 0.D0
+            do I = 1 , 14
+                call HijrifirstDay(MoonPhaseJD(I,0),Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF, &
+                    newMoonJD(I),newMoonDate(I,1),newMoonDate(I,2))
             end do
       end subroutine
 

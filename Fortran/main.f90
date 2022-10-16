@@ -418,7 +418,7 @@ program main
 
       elseif(options==5) then
 
-            call HijriMonths(year,Imonth,Iday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF,HijriJD,newMoonDate)
+            call HijriMonthCS(year,Imonth,Iday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREF,HijriJD,newMoonDate)
 
             print*,
             filename1 = Trim(LocatName)//'_HijriMonths'//YearChar//'.txt'
@@ -492,6 +492,7 @@ program main
                   call SunMoonCalendar(LocatName,Iyear,CalenType,Geo,airModel,&
                   Method,B_Ilum,aidAccept,DST,UT_TT,IREF)
             end if
+
 
       elseif(options==7) then
 
@@ -586,20 +587,16 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             Omonth = 3
             Oday = MarDay
             if(Equinox(2) /= 1) Oday = Oday + 1
-            call YearMoonPhases(Oyear,Omonth,20,moonPhaseJD)
-            call HijriMonths(Oyear,Omonth,21,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR, &
-           &  NewMoonJD,newMoonDate)
+            call HijriMonths(Gyear,Omonth,Oday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR,NewMoonJD,newMoonDate,MoonPhaseJD)
             newYearJD = TrueJDEquiSolitice(Gyear,0)
-            call iau_DAT(Oyear,3,MarDay,0.D0,DELTA_T,J)
+            call iau_DAT(Gyear,3,MarDay,0.D0,DELTA_T,J)
       else
             DJD = CAL2JD (IYear,1,1)
             if(IsLeapYear(Iyear)) GdaysInMonth(2) = 29
             call JD2IrCal(DJD,Oyear,Omonth,Oday,hour)
             call IranCalendar(Oyear,Gyear,UJD,isLeap,Equinox,MarDay,Uhour)
             if(isLeap) DaysInMonth(12) = 30
-            call YearMoonPhases(Iyear,1,1,moonPhaseJD)
-            call HijriMonths(Iyear,1,15,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR, &
-           &  NewMoonJD,newMoonDate)
+            call HijriMonths(Iyear,1,1,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR,NewMoonJD,newMoonDate,MoonPhaseJD)
             newYearJD = TrueJDEquiSolitice(Iyear,0)
             call iau_DAT(Iyear,1,1,0.D0,DELTA_T,J)
       end if
@@ -610,7 +607,8 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
 
       YearChar = Trim(I2str(Iyear))
       filename1 = Trim(Location)//'_MoonSunCalendar'//YearChar//'.txt'
-      open(unit = 10 ,file = trim(filename1), form = 'formatted',status = 'unknown')
+
+      open(unit = 10 ,file = filename1, form = 'formatted',status = 'unknown')
 
        if(aidAccept == 1) then
             aidAcceptText = 'Aid for new Moon sighting is accepted'
@@ -759,7 +757,8 @@ subroutine SunMoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
 
                   do L= I , I+2
                         do q = 0,3
-                              if(DJD == dint(MoonPhaseJD(L,q))-0.5D0) then
+                              if(DJD <= MoonPhaseJD(L,q)+Geo(4)/24.D0 .and. &
+                                 DJD+1.D0 > MoonPhaseJD(L,q)+Geo(4)/24.D0) then
                                     if(q==0) then
                                           MoonStat = ' New Moon'
                                           exit
@@ -901,20 +900,16 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
             Omonth = 3
             Oday = MarDay
             if(Equinox(2) /= 1) Oday = Oday + 1
-            call YearMoonPhases(Oyear,Omonth,20,moonPhaseJD)
-            call HijriMonths(Oyear,Omonth,21,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR, &
-           &  NewMoonJD,newMoonDate)
+            call HijriMonths(Gyear,Omonth,Oday,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR,NewMoonJD,newMoonDate,MoonPhaseJD)
             newYearJD = TrueJDEquiSolitice(Gyear,0)
-            call iau_DAT(Oyear,3,MarDay,0.D0,DELTA_T,J)
+            call iau_DAT(Gyear,3,MarDay,0.D0,DELTA_T,J)
       else
             DJD = CAL2JD (IYear,1,1)
             if(IsLeapYear(Iyear)) GdaysInMonth(2) = 29
             call JD2IrCal(DJD,Oyear,Omonth,Oday,hour)
             call IranCalendar(Oyear,Gyear,UJD,isLeap,Equinox,MarDay,Uhour)
             if(isLeap) DaysInMonth(12) = 30
-            call YearMoonPhases(Iyear,1,1,moonPhaseJD)
-            call HijriMonths(Iyear,1,15,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR, &
-           &  NewMoonJD,newMoonDate)
+            call HijriMonths(Iyear,1,1,Geo,Atmos,UT_TT,Method,B_Ilum,AidAccept,IREFR,NewMoonJD,newMoonDate,MoonPhaseJD)
             newYearJD = TrueJDEquiSolitice(Iyear,0)
             call iau_DAT(Iyear,1,1,0.D0,DELTA_T,J)
       end if
@@ -960,7 +955,7 @@ subroutine MoonCalendar(Location,Iyear,CalenType,Geo,airModel,&
       write(10,7)aidAcceptText,Iyear
  7    format(1X,A,/120('-')/52X,I4)
 
-      call JD2TradHijri(DJD,Geo1,Atmos,UT_TT,Method,B_Ilum,aidAccept,IREFR,NMJD,HY,HM,HD,Hour)
+      call JD2TradHijri(DJD,Geo,Atmos,UT_TT,Method,B_Ilum,aidAccept,IREFR,NMJD,HY,HM,HD,Hour)
 
       do km =1,3
             if(DJD < newMoonJD(km)) exit
