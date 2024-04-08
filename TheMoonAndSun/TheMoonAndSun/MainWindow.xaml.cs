@@ -369,15 +369,38 @@ namespace TheMoonAndSun
 
             double JD = NativeMethods.Cal2JD(ref jDate[0], ref jDate[1], ref jDate[2]);
 
-            
+            double[] MoonJD = new double[14];
+            int[] newMoonDate = new int[28];
+           
+            int day = 1;
+            int newMoonMon = 1;
+            if ((bool)persCalendar.IsChecked)
+            {
+                newMoonMon = 3;
+                day = 21;
+            }
+           
+            NativeMethods.FhijriMonths(ref jDate[0], ref newMoonMon, ref day, Geo, Atmos, ref UT_TT, ref Method, ref B_Ilum, ref aidAccepted,
+                 ref Iref, MoonJD, newMoonDate);
+
+
             int Hy = 1;
             int Hm = 1;
             int Hd = 1;
-            double NMJD = 0.0;
-            double Hour = 0.0;
+           
+            for (int i = 0; i <= 13; i++)
+            {
+               if(JD >= MoonJD[i])
+                {
+                    Hm = newMoonDate[i + 14] -1;
+                    Hy = newMoonDate[i] ;
+                    Hd = Convert.ToInt32(JD - MoonJD[i]) + 1;
+                }
+                          
+             }
 
-            NativeMethods.JD2TradHijri(ref JD, Geo, Atmos, ref UT_TT, ref Method, ref B_Ilum,
-                ref aidAccepted, ref Iref, ref NMJD, ref Hy, ref Hm, ref Hd, ref Hour); 
+            //NativeMethods.JD2TradHijri(ref JD, Geo, Atmos, ref UT_TT, ref Method, ref B_Ilum,
+            //   ref aidAccepted, ref Iref, ref NMJD, ref Hy, ref Hm, ref Hd, ref Hour); 
 
             string hijridate = Hd.ToString("D2", CultureInfo.CurrentCulture) + " " + NativeMethods.hijriMonthName(Hm , 1) + " " + Hy.ToString("D4", CultureInfo.CurrentCulture);
 
