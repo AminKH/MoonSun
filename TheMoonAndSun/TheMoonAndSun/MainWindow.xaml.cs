@@ -1244,8 +1244,8 @@ namespace TheMoonAndSun
             {
                 yearText = irYear.Text;
                 int Iryear = getIrYear();
-                int Irmonth = getIrMonth();
-                int Irday = getIrDay();
+                int Irmonth = 1 //getIrMonth();
+                int Irday = 1 //getIrDay();
                 double Hour = 0.0;
                 double IrJD =NativeMethods.IrCal2JD(ref Iryear, ref Irmonth,ref Irday,ref Hour);
                 NativeMethods.JD2Cal(ref IrJD,ref year1,ref month1,ref day1,ref Hour);                
@@ -1713,8 +1713,8 @@ namespace TheMoonAndSun
             {
                 yearText = irYear.Text;
                 int Iryear = getIrYear();
-                int Irmonth = getIrMonth();
-                int Irday = getIrDay();
+                int Irmonth = 1 // getIrMonth();
+                int Irday = 1 // getIrDay();
                 double Hour = 0.0;
                 double IrJD = NativeMethods.IrCal2JD(ref Iryear, ref Irmonth, ref Irday, ref Hour);
                 NativeMethods.JD2Cal(ref IrJD, ref year1, ref month1, ref day1, ref Hour);
